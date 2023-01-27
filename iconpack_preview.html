@@ -5,6 +5,8 @@
 <style>
 :root {
     --main-bg-color: #333333;
+    --icon-max-width: 150px;
+    --icon-max-height: 150px;
 }
 
 body {
@@ -35,8 +37,8 @@ label {
 
 .icon-preview-container {
     position: relative;
-    width: 150px;
-    height: 170px;
+    width: var(--icon-max-width);
+    height: var(--icon-max-height);
 }
 
 .icon-preview-container .icon-preview.selected {
@@ -55,8 +57,8 @@ label {
 .icon-preview-container {
     position: relative;
     overflow: hidden;
-    width: 150px;
-    height: 170px;
+    width: var(--icon-max-width);
+    height: var(--icon-max-height);
     box-sizing: border-box;
     border: 1px solid rgba(128,128,128,0.25);
     display: flex;
@@ -77,13 +79,14 @@ label {
     content: attr(data-icon);
     bottom: 10px;
     opacity: 0.5;
-    font-size: 0.8em;
+    font-family: monospace;
+    font-size: 16px;
 }
 
 .icon-preview {
     position: absolute;
-    width: 150px;
-    height: 170px;
+    width: var(--icon-max-width);
+    height: var(--icon-max-height);
     background-color: var(--main-bg-color);
     display: flex;
     align-items: center;
