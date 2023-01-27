@@ -166,8 +166,8 @@ for (const [index, icon_pack] of icon_packs.entries()) {
     for (icon of icons) {
         document.write(
             `<div class="icon-preview-container" data-icon="${icon}">
-                <div class="icon-preview"><img src="${icon_pack.path}${icon}.png" onerror="this.parentNode.style.display='none';"></div>
-                <div class="icon-preview selected"><img src="${icon_pack.path}sel/${icon}.png" onerror="this.parentNode.style.display='none';"></div>
+                <div class="icon-preview"><img src="${icon_pack.path}${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none';" onload="this.style.display=''"></div>
+                <div class="icon-preview selected"><img src="${icon_pack.path}sel/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none';" onload="this.style.display=''"></div>
             </div>`);
     }
 
