@@ -111,10 +111,7 @@ function setAllSelected(selected) {
 
 
 let main_bg_color = localStorage.getItem('main-bg-color') || "#333333";
-setBackgroundColor(main_bg_color);
-
 let is_all_selected = sessionStorage.getItem('all-selected') == "on" || false;
-setAllSelected(is_all_selected);
 
 let doc_title = basename(dirname(decodeURI(location.href)));
 
@@ -133,6 +130,12 @@ if (location.hash) {
 
     for (let i = 1; i < hash_parts.length; i++) {
         let [ title, path ] = hash_parts[i].split(":");
+
+        if (title == "background") {
+            main_bg_color = path;
+            continue;
+        }
+
         icon_packs.push({ title, path: `https://raw.githubusercontent.com/OnionUI/Themes/main/${path}/` });
     }
 
@@ -143,6 +146,9 @@ if (location.hash) {
 else {
     icon_packs.push({ title: doc_title, path: "./" });
 }
+
+setBackgroundColor(main_bg_color);
+setAllSelected(is_all_selected);
 
 document.title = "Icon Pack: " + doc_title;
 
