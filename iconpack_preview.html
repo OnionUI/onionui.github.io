@@ -3,17 +3,34 @@
 <head>
     <title>Icon Pack Preview</title>
 <style>
+:root {
+    --main-bg-color: #333333;
+}
+
 body {
-    background-color: #333333;
+    background-color: var(--main-bg-color);
     font-family: sans-serif;
-    color: white;
+    color: rgba(128,128,128,1);
+}
+
+h2 {
+    margin-top: 2em;
+}
+
+input {
+    background-color: var(--main-bg-color);
+    border: 1px solid rgba(128,128,128,0.5);
+    color: rgba(128,128,128,1);
+}
+
+label {
+    font-size: .8em;
 }
 
 .icons-container {
     display: flex;
     flex-wrap: wrap;
     margin-top: 20px;
-    margin-bottom: 50px;
 }
 
 .icon-preview-container {
@@ -40,11 +57,18 @@ body {
     overflow: hidden;
     width: 150px;
     height: 170px;
-    background-color: #333333;
-    outline: 1px solid #666;
+    box-sizing: border-box;
+    border: 1px solid rgba(128,128,128,0.25);
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-top: -1px;
+    margin-left: -1px;
+}
+
+.icon-preview-container:hover {
+    border-color: rgba(128,128,128,1);
+    z-index: 1;
 }
 
 .icon-preview-container::after {
@@ -60,7 +84,7 @@ body {
     position: absolute;
     width: 150px;
     height: 170px;
-    background-color: #333333;
+    background-color: var(--main-bg-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,6 +97,16 @@ const icons = ['32X', '5200', '7800', 'amiga', 'arcade', 'atari', 'atarist', 'c6
 
 const dirname = path => path.substring(0, path.lastIndexOf('/'));
 const basename = path => path.substring(path.lastIndexOf('/') + 1);
+
+
+function setBackgroundColor(color) {
+    localStorage.setItem('main-bg-color', color);
+    document.body.style.setProperty('--main-bg-color', color);
+}
+
+
+let main_bg_color = localStorage.getItem('main-bg-color') || "#333333";
+setBackgroundColor(main_bg_color);
 
 let doc_title = basename(dirname(location.href));
 
@@ -104,10 +138,13 @@ else {
 
 document.title = "Icon Pack: " + doc_title;
 
+document.write(`<h1>Icon Pack: ${doc_title}</h1>`);
+document.write(`<label for="set_bg_color">Background color: </label><input size="10" id="set_bg_color" value="${main_bg_color}" onblur="setBackgroundColor(this.value);" onkeydown="if (event.keyCode == 13) setBackgroundColor(this.value);">`);
+
 for (const [index, icon_pack] of icon_packs.entries()) {
     let icon_pack_id = `icon_pack_${index}`;
 
-    document.write(`<h1>${decodeURI(icon_pack.title)}</h1>`);
+    document.write(`<h2>${decodeURI(icon_pack.title)}</h2>`);
     document.write(`<input type="checkbox" id="${icon_pack_id}_checkbox" onclick="document.getElementById('${icon_pack_id}').classList.toggle('all-selected', this.checked);">`);
     document.write(`<label for="${icon_pack_id}_checkbox"> Show only selected state</label>`);
     document.write(`<div class="icons-container" id="${icon_pack_id}">`);
