@@ -43,12 +43,12 @@ label {
     visibility: hidden;
 }
 
-.icons-container.all-selected .icon-preview-container .icon-preview {
+.all-selected .icon-preview-container .icon-preview {
     visibility: hidden;
 }
 
 .icon-preview-container:hover .icon-preview.selected,
-.icons-container.all-selected .icon-preview-container .icon-preview.selected {
+.all-selected .icon-preview-container .icon-preview.selected {
     visibility: visible;
 }
 
@@ -104,14 +104,22 @@ function setBackgroundColor(color) {
     document.body.style.setProperty('--main-bg-color', color);
 }
 
+function setAllSelected(selected) {
+    sessionStorage.setItem('all-selected', selected ? 'on' : 'off');
+    document.body.classList.toggle('all-selected', selected);
+}
+
 
 let main_bg_color = localStorage.getItem('main-bg-color') || "#333333";
 setBackgroundColor(main_bg_color);
 
-let doc_title = basename(dirname(location.href));
+let is_all_selected = sessionStorage.getItem('all-selected') == "on" || false;
+setAllSelected(is_all_selected);
+
+let doc_title = basename(dirname(decodeURI(location.href)));
 
 if (doc_title == "icons")
-    doc_title = basename(dirname(dirname(location.href)));
+    doc_title = basename(dirname(dirname(decodeURI(location.href))));
 
 let icon_packs = [];
 
@@ -139,14 +147,14 @@ else {
 document.title = "Icon Pack: " + doc_title;
 
 document.write(`<h1>Icon Pack: ${doc_title}</h1>`);
-document.write(`<label for="set_bg_color">Background color: </label><input size="10" id="set_bg_color" value="${main_bg_color}" onblur="setBackgroundColor(this.value);" onkeydown="if (event.keyCode == 13) setBackgroundColor(this.value);">`);
+document.write(`<label for="set_bg_color">Background color: </label><input size="10" id="set_bg_color" value="${main_bg_color}" onblur="setBackgroundColor(this.value);" onkeydown="if (event.keyCode == 13) setBackgroundColor(this.value);"> &nbsp;`);
+document.write(`<input type="checkbox"${is_all_selected ? " checked" : ""} id="all_selected_checkbox" onclick="setAllSelected(this.checked)">`);
+document.write(`<label for="all_selected_checkbox"> Show only selected state</label>`);
 
 for (const [index, icon_pack] of icon_packs.entries()) {
     let icon_pack_id = `icon_pack_${index}`;
 
     document.write(`<h2>${decodeURI(icon_pack.title)}</h2>`);
-    document.write(`<input type="checkbox" id="${icon_pack_id}_checkbox" onclick="document.getElementById('${icon_pack_id}').classList.toggle('all-selected', this.checked);">`);
-    document.write(`<label for="${icon_pack_id}_checkbox"> Show only selected state</label>`);
     document.write(`<div class="icons-container" id="${icon_pack_id}">`);
 
     for (icon of icons) {
