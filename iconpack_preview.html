@@ -147,8 +147,8 @@ else {
     icon_packs.push({ title: doc_title, path: "./" });
 }
 
-setBackgroundColor(main_bg_color);
-setAllSelected(is_all_selected);
+document.body.style.setProperty('--main-bg-color', main_bg_color);
+document.body.classList.toggle('all-selected', is_all_selected);
 
 document.title = "Icon Pack: " + doc_title;
 
