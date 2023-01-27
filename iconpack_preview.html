@@ -1,16 +1,127 @@
-<head><title>Icon Pack Preview</title><base href="https://raw.githubusercontent.com/OnionUI/Themes/main/"></head><body style="background-color:#333333;font-family:sans-serif;color:white"></body>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Pack Preview</title>
+<style>
+body {
+    background-color: #333333;
+    font-family: sans-serif;
+    color: white;
+}
+
+.icons-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    margin-bottom: 50px;
+}
+
+.icon-preview-container {
+    position: relative;
+    width: 150px;
+    height: 170px;
+}
+
+.icon-preview-container .icon-preview.selected {
+    visibility: hidden;
+}
+
+.icons-container.all-selected .icon-preview-container .icon-preview {
+    visibility: hidden;
+}
+
+.icon-preview-container:hover .icon-preview.selected,
+.icons-container.all-selected .icon-preview-container .icon-preview.selected {
+    visibility: visible;
+}
+
+.icon-preview-container {
+    position: relative;
+    overflow: hidden;
+    width: 150px;
+    height: 170px;
+    background-color: #333333;
+    outline: 1px solid #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-preview-container::after {
+    display: block;
+    position: absolute;
+    content: attr(data-icon);
+    bottom: 10px;
+    opacity: 0.5;
+    font-size: 0.8em;
+}
+
+.icon-preview {
+    position: absolute;
+    width: 150px;
+    height: 170px;
+    background-color: #333333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+</head>
+<body>
 <script>
-if (window.location.hash) {
-    let hash = window.location.hash.substring(1);
-    let hash_contains_title = hash.indexOf("::") != -1;
-    let hash_parts = hash_contains_title ? hash.split("::") : ["", hash];
+const icons = ['32X', '5200', '7800', 'amiga', 'arcade', 'atari', 'atarist', 'c64', 'col', 'cpc', 'cps1', 'cps2', 'cps3', 'dos', 'fairchild', 'fc', 'fds', 'gb', 'gba', 'gbc', 'gg', 'gw', 'itv', 'lynx', 'md', 'megaduck', 'ms', 'msx', 'neocd', 'neogeo', 'ngp', 'ody', 'pce', 'pcecd', 'pico', 'poke', 'ports', 'ps', 'satella', 'scummvm', 'search', 'segacd', 'segasgone', 'sfc', 'sgb', 'sgfx', 'sufami', 'supervision', 'tic', 'vb', 'vdp', 'vectrex', 'ws', 'zxs'];
+
+const dirname = path => path.substring(0, path.lastIndexOf('/'));
+const basename = path => path.substring(path.lastIndexOf('/') + 1);
+
+let doc_title = basename(dirname(location.href));
+
+if (doc_title == "icons")
+    doc_title = basename(dirname(dirname(location.href)));
+
+let icon_packs = [];
+
+if (location.hash) {
+    let hash = location.hash.substring(1);
+
+    let has_multi = hash.indexOf(",") != -1;
+    let hash_parts = has_multi ? hash.split(",") : [hash];
     
-    if (hash_contains_title) {
-        let title = decodeURI(hash_parts[0]);
-        document.title = "Icon Pack: " + title;
+    doc_title = decodeURI(hash_parts[0]);
+
+    for (let i = 1; i < hash_parts.length; i++) {
+        let [ title, path ] = hash_parts[i].split(":");
+        icon_packs.push({ title, path: `https://raw.githubusercontent.com/OnionUI/Themes/main/${path}/` });
     }
 
-    let base64URL = hash_parts[1];
-    document.write('<iframe src="' + base64URL  + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+    if (icon_packs.length == 0) {
+        icon_packs.push({ title: doc_title, path: `https://raw.githubusercontent.com/OnionUI/Themes/main/icons/${hash_parts[0]}/` });
+    }
+}
+else {
+    icon_packs.push({ title: doc_title, path: "./" });
+}
+
+document.title = "Icon Pack: " + doc_title;
+
+for (const [index, icon_pack] of icon_packs.entries()) {
+    let icon_pack_id = `icon_pack_${index}`;
+
+    document.write(`<h1>${decodeURI(icon_pack.title)}</h1>`);
+    document.write(`<input type="checkbox" id="${icon_pack_id}_checkbox" onclick="document.getElementById('${icon_pack_id}').classList.toggle('all-selected', this.checked);">`);
+    document.write(`<label for="${icon_pack_id}_checkbox"> Show only selected state</label>`);
+    document.write(`<div class="icons-container" id="${icon_pack_id}">`);
+
+    for (icon of icons) {
+        document.write(
+            `<div class="icon-preview-container" data-icon="${icon}">
+                <div class="icon-preview"><img src="${icon_pack.path}${icon}.png" onerror="this.parentNode.style.display='none';"></div>
+                <div class="icon-preview selected"><img src="${icon_pack.path}sel/${icon}.png" onerror="this.parentNode.style.display='none';"></div>
+            </div>`);
+    }
+
+    document.write('</div>');
 }
 </script>
+</body>
+</html>
