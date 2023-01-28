@@ -29,6 +29,16 @@ label {
     font-size: .8em;
 }
 
+input[type=checkbox] + label {
+    opacity: .75;
+    user-select: none;
+    cursor: pointer;
+}
+
+input[type=checkbox] + label:hover, input[type=checkbox]:hover + label {
+    opacity: 1;
+}
+
 .icons-container {
     display: flex;
     flex-wrap: wrap;
@@ -68,6 +78,14 @@ label {
     margin-left: -1px;
 }
 
+.show-only-existing .icon-preview-container {
+    display: none;
+}
+
+.icon-preview-container.has-icon, .show-only-existing .icon-preview-container.has-icon {
+    display: flex;
+}
+
 .icon-preview-container:hover {
     border-color: rgba(128,128,128,1);
     z-index: 1;
@@ -101,20 +119,41 @@ const icons = ['32X', '5200', '7800', 'amiga', 'arcade', 'atari', 'atarist', 'c6
 const dirname = path => path.substring(0, path.lastIndexOf('/'));
 const basename = path => path.substring(path.lastIndexOf('/') + 1);
 
+let main_bg_color = localStorage.getItem('main-bg-color') || "#333333";
+let is_all_selected = sessionStorage.getItem('all-selected') == "on";
+let show_only_existing = sessionStorage.getItem('show-only-existing') != "off";
+let auto_refresh = location.protocol == "file:" ? (sessionStorage.getItem('auto-refresh') == "on") : false;
+let auto_refresh_timer = -1;
 
 function setBackgroundColor(color) {
     localStorage.setItem('main-bg-color', color);
     document.body.style.setProperty('--main-bg-color', color);
+    main_bg_color = color;
 }
 
-function setAllSelected(selected) {
-    sessionStorage.setItem('all-selected', selected ? 'on' : 'off');
-    document.body.classList.toggle('all-selected', selected);
+function setAllSelected(enabled) {
+    sessionStorage.setItem('all-selected', enabled ? 'on' : 'off');
+    document.body.classList.toggle('all-selected', enabled);
+    is_all_selected = enabled;
 }
 
+function setShowOnlyExisting(enabled) {
+    sessionStorage.setItem('show-only-existing', enabled ? 'on' : 'off');
+    document.body.classList.toggle('show-only-existing', enabled);
+    show_only_existing = enabled;
+}
 
-let main_bg_color = localStorage.getItem('main-bg-color') || "#333333";
-let is_all_selected = sessionStorage.getItem('all-selected') == "on" || false;
+function setAutoRefresh(enabled) {
+    sessionStorage.setItem('auto-refresh', enabled ? 'on' : 'off');
+    auto_refresh = enabled;
+    clearTimeout(auto_refresh_timer);
+
+    if (auto_refresh) {
+        auto_refresh_timer = setTimeout(() => {
+            location.reload();
+        }, 3000);
+    }
+}
 
 let doc_title = basename(dirname(decodeURI(location.href)));
 
@@ -152,13 +191,22 @@ else {
 
 document.body.style.setProperty('--main-bg-color', main_bg_color);
 document.body.classList.toggle('all-selected', is_all_selected);
+document.body.classList.toggle('show-only-existing', show_only_existing);
 
 document.title = "Icon Pack: " + doc_title;
 
 document.write(`<h1>Icon Pack: ${doc_title}</h1>`);
-document.write(`<label for="set_bg_color">Background color: </label><input size="10" id="set_bg_color" value="${main_bg_color}" onblur="setBackgroundColor(this.value);" onkeydown="if (event.keyCode == 13) setBackgroundColor(this.value);"> &nbsp;`);
-document.write(`<input type="checkbox"${is_all_selected ? " checked" : ""} id="all_selected_checkbox" onclick="setAllSelected(this.checked)">`);
-document.write(`<label for="all_selected_checkbox"> Show only selected state</label>`);
+
+document.write(`<label for="set_bg_color">Background color: </label><input size="10" id="set_bg_color" value="${main_bg_color}" onblur="setBackgroundColor(this.value);" onkeydown="if (event.keyCode == 13) setBackgroundColor(this.value);">`);
+document.write("&nbsp;&nbsp;");
+document.write(`<input type="checkbox"${is_all_selected ? " checked" : ""} id="all_selected_checkbox" onclick="setAllSelected(this.checked)"><label for="all_selected_checkbox"> Show only selected state</label>`);
+document.write("&nbsp;&nbsp;");
+document.write(`<input type="checkbox"${show_only_existing ? " checked" : ""} id="show_only_existing_checkbox" onclick="setShowOnlyExisting(this.checked)"><label for="show_only_existing_checkbox"> Hide missing icons</label>`);
+
+if (location.protocol == "file:") {
+    document.write("&nbsp;&nbsp;");
+    document.write(`<input type="checkbox"${auto_refresh ? " checked" : ""} id="auto_refresh_checkbox" onclick="setAutoRefresh(this.checked)"><label for="auto_refresh_checkbox"> Auto refresh (3s)</label>`);
+}
 
 for (const [index, icon_pack] of icon_packs.entries()) {
     let icon_pack_id = `icon_pack_${index}`;
@@ -169,12 +217,16 @@ for (const [index, icon_pack] of icon_packs.entries()) {
     for (icon of icons) {
         document.write(
             `<div class="icon-preview-container" data-icon="${icon}">
-                <div class="icon-preview"><img src="${icon_pack.path}${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none';" onload="this.style.display=''"></div>
-                <div class="icon-preview selected"><img src="${icon_pack.path}sel/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none';" onload="this.style.display=''"></div>
+                <div class="icon-preview"><img src="${icon_pack.path}${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
+                <div class="icon-preview selected"><img src="${icon_pack.path}sel/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
             </div>`);
     }
 
     document.write('</div>');
+}
+
+if (location.protocol == "file:") {
+    setAutoRefresh(auto_refresh);
 }
 </script>
 </body>
