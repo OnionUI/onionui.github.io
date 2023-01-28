@@ -124,6 +124,13 @@ let is_all_selected = sessionStorage.getItem('all-selected') == "on";
 let show_only_existing = sessionStorage.getItem('show-only-existing') != "off";
 let auto_refresh = location.protocol == "file:" ? (sessionStorage.getItem('auto-refresh') == "on") : false;
 let auto_refresh_timer = -1;
+let icon_counts = [];
+
+function incrementIconCount(pack_id, index) {
+    icon_counts[index]++;
+    document.getElementById(`${pack_id}_counter`).textContent = icon_counts[index];
+    document.getElementById(`${pack_id}_percentage`).textContent = Math.round(icon_counts[index] / icons.length * 100);
+}
 
 function setBackgroundColor(color) {
     localStorage.setItem('main-bg-color', color);
@@ -151,83 +158,94 @@ function setAutoRefresh(enabled) {
     if (auto_refresh) {
         auto_refresh_timer = setTimeout(() => {
             location.reload();
-        }, 3000);
+        }, 10000);
     }
 }
 
-let doc_title = basename(dirname(decodeURI(location.href)));
+function main() {
+    let doc_title = basename(dirname(decodeURI(location.href)));
 
-if (doc_title == "icons")
-    doc_title = basename(dirname(dirname(decodeURI(location.href))));
+    if (doc_title == "icons")
+        doc_title = basename(dirname(dirname(decodeURI(location.href))));
 
-let icon_packs = [];
+    let icon_packs = [];
 
-if (location.hash) {
-    let hash = location.hash.substring(1);
+    if (location.hash) {
+        let hash = location.hash.substring(1);
 
-    let has_multi = hash.indexOf(",") != -1;
-    let hash_parts = has_multi ? hash.split(",") : [hash];
-    
-    doc_title = decodeURI(hash_parts[0]);
+        let has_multi = hash.indexOf(",") != -1;
+        let hash_parts = has_multi ? hash.split(",") : [hash];
+        
+        doc_title = decodeURI(hash_parts[0]);
 
-    for (let i = 1; i < hash_parts.length; i++) {
-        let [ title, path ] = hash_parts[i].split(":");
+        for (let i = 1; i < hash_parts.length; i++) {
+            let [ title, path ] = hash_parts[i].split(":");
 
-        if (title == "background") {
-            main_bg_color = path;
-            continue;
+            if (title == "background") {
+                main_bg_color = path;
+                continue;
+            }
+
+            icon_packs.push({ title, path: `https://raw.githubusercontent.com/OnionUI/Themes/main/${path}/` });
         }
 
-        icon_packs.push({ title, path: `https://raw.githubusercontent.com/OnionUI/Themes/main/${path}/` });
+        if (icon_packs.length == 0) {
+            icon_packs.push({ title: doc_title, path: `https://raw.githubusercontent.com/OnionUI/Themes/main/icons/${hash_parts[0]}/` });
+        }
+    }
+    else {
+        icon_packs.push({ title: doc_title, path: "./" });
     }
 
-    if (icon_packs.length == 0) {
-        icon_packs.push({ title: doc_title, path: `https://raw.githubusercontent.com/OnionUI/Themes/main/icons/${hash_parts[0]}/` });
-    }
-}
-else {
-    icon_packs.push({ title: doc_title, path: "./" });
-}
+    document.body.style.setProperty('--main-bg-color', main_bg_color);
+    document.body.classList.toggle('all-selected', is_all_selected);
+    document.body.classList.toggle('show-only-existing', show_only_existing);
 
-document.body.style.setProperty('--main-bg-color', main_bg_color);
-document.body.classList.toggle('all-selected', is_all_selected);
-document.body.classList.toggle('show-only-existing', show_only_existing);
+    document.title = "Icon Pack: " + doc_title;
 
-document.title = "Icon Pack: " + doc_title;
+    let html = "";
 
-document.write(`<h1>Icon Pack: ${doc_title}</h1>`);
+    html += `<h1>Icon Pack: ${doc_title}</h1>`;
 
-document.write(`<label for="set_bg_color">Background color: </label><input size="10" id="set_bg_color" value="${main_bg_color}" onblur="setBackgroundColor(this.value);" onkeydown="if (event.keyCode == 13) setBackgroundColor(this.value);">`);
-document.write("&nbsp;&nbsp;");
-document.write(`<input type="checkbox"${is_all_selected ? " checked" : ""} id="all_selected_checkbox" onclick="setAllSelected(this.checked)"><label for="all_selected_checkbox"> Show only selected state</label>`);
-document.write("&nbsp;&nbsp;");
-document.write(`<input type="checkbox"${show_only_existing ? " checked" : ""} id="show_only_existing_checkbox" onclick="setShowOnlyExisting(this.checked)"><label for="show_only_existing_checkbox"> Hide missing icons</label>`);
+    html += `<label for="set_bg_color">Background color: </label><input size="10" id="set_bg_color" value="${main_bg_color}" onblur="setBackgroundColor(this.value);" onkeydown="if (event.keyCode == 13) setBackgroundColor(this.value);">`;
+    html += "&nbsp;&nbsp;";
+    html += `<input type="checkbox"${is_all_selected ? " checked" : ""} id="all_selected_checkbox" onclick="setAllSelected(this.checked)"><label for="all_selected_checkbox"> Show only selected state</label>`;
+    html += "&nbsp;&nbsp;";
+    html += `<input type="checkbox"${show_only_existing ? " checked" : ""} id="show_only_existing_checkbox" onclick="setShowOnlyExisting(this.checked)"><label for="show_only_existing_checkbox"> Hide missing icons</label>`;
 
-if (location.protocol == "file:") {
-    document.write("&nbsp;&nbsp;");
-    document.write(`<input type="checkbox"${auto_refresh ? " checked" : ""} id="auto_refresh_checkbox" onclick="setAutoRefresh(this.checked)"><label for="auto_refresh_checkbox"> Auto refresh (3s)</label>`);
-}
-
-for (const [index, icon_pack] of icon_packs.entries()) {
-    let icon_pack_id = `icon_pack_${index}`;
-
-    document.write(`<h2>${decodeURI(icon_pack.title)}</h2>`);
-    document.write(`<div class="icons-container" id="${icon_pack_id}">`);
-
-    for (icon of icons) {
-        document.write(
-            `<div class="icon-preview-container" data-icon="${icon}">
-                <div class="icon-preview"><img src="${icon_pack.path}${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
-                <div class="icon-preview selected"><img src="${icon_pack.path}sel/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
-            </div>`);
+    if (location.protocol == "file:") {
+        html += "&nbsp;&nbsp;";
+        html += `<input type="checkbox"${auto_refresh ? " checked" : ""} id="auto_refresh_checkbox" onclick="setAutoRefresh(this.checked)"><label for="auto_refresh_checkbox"> Auto refresh (10s)</label>`;
     }
 
-    document.write('</div>');
+    icon_counts = new Array(icon_packs.length).fill(0);
+
+    for (const [index, icon_pack] of icon_packs.entries()) {
+        let icon_pack_id = `icon_pack_${index}`;
+
+        html += `<h2>${decodeURI(icon_pack.title)}</h2>`;
+        html += `<div><label><span id="${icon_pack_id}_counter">0</span>/${icons.length} icons (<span id="${icon_pack_id}_percentage">0</span>% complete)</label></div>`;
+        html += `<div class="icons-container" id="${icon_pack_id}">`;
+
+        for (icon of icons) {
+            html += 
+                `<div class="icon-preview-container" data-icon="${icon}">
+                    <div class="icon-preview"><img src="${icon_pack.path}${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon');incrementIconCount('${icon_pack_id}', ${index})"></div>
+                    <div class="icon-preview selected"><img src="${icon_pack.path}sel/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
+                </div>`;
+        }
+
+        html += '</div>';
+    }
+
+    document.body.innerHTML = html;
+
+    if (location.protocol == "file:") {
+        setAutoRefresh(auto_refresh);
+    }
 }
 
-if (location.protocol == "file:") {
-    setAutoRefresh(auto_refresh);
-}
+document.body.onload = main;
 </script>
 </body>
 </html>
