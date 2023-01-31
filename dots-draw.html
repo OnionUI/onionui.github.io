@@ -338,7 +338,7 @@ window.onload = () => {
     document.body.addEventListener("pointerup", event => {
         if (!draw_active) return;
         draw_active = false;
-        canvas_updateState();
+        canvas_addState();
     })
 
     ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -364,7 +364,7 @@ window.onload = () => {
     
     clearCanvas();
     canvas_setState(current_state);
-    canvas_updateState(current_state);
+    canvas_addState(current_state);
 
     updateActiveFilename(session_filename);
 
@@ -393,7 +393,7 @@ function newFile(skip_confirm) {
     updateActiveFilename(DEFAULT_FILENAME);
     resetUndoHistory();
     clearCanvas();
-    canvas_updateState();
+    canvas_addState();
 }
 
 
@@ -434,7 +434,7 @@ function clearCanvas() {
                 if (!draw_active) return;
                 if (event.pressure == 0) {
                     draw_active = false;
-                    canvas_updateState();
+                    canvas_addState();
                     return;
                 }
                 dot_el.classList.toggle("active", draw_type == 0);
@@ -456,7 +456,7 @@ function loadState(state) {
     clearCanvas();
     resetUndoHistory();
     canvas_setState(state);
-    canvas_updateState(state);
+    canvas_addState(state);
 }
 
 
@@ -508,13 +508,20 @@ async function saveFile() {
     updateActiveFilename(fileHandle.name);
 }
 
-function canvas_updateState(state) {
+function canvas_addState(state) {
     if (!state)
         state = canvas_getState();
 
     history_add(state);
     updatePreview(state);
     sessionStorage.setItem("current_state", state);
+}
+
+function canvas_updateState() {
+    const state = history_currentState();
+    canvas_setState(state);
+    updatePreview(state);
+    history_updateButtons();
 }
 
 function canvas_getState() {
@@ -563,8 +570,7 @@ function history_undo(only_check) {
     if (only_check) return true;
 
     undo_reverse_index++;
-    canvas_setState(history_currentState());
-    history_updateButtons();
+    canvas_updateState();
 
     return true;
 }
@@ -576,8 +582,7 @@ function history_redo(only_check) {
     if (only_check) return true;
 
     undo_reverse_index--;
-    canvas_setState(history_currentState());
-    history_updateButtons();
+    canvas_updateState();
 
     return true;
 }
