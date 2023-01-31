@@ -27,7 +27,7 @@ body {
 
 .menu-bar {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     width: 100vw;
     height: 60px;
     background-color: #383845;
@@ -41,6 +41,10 @@ body {
     align-items: center;
     justify-content: left;
     padding: 0 12px;
+}
+
+.menu-bar div.middle-part {
+    justify-content: center;
 }
 
 .menu-bar div.right-side {
@@ -81,7 +85,8 @@ body {
 
 .menu-bar button:active,
 .menu-bar .color-picker:active,
-.menu-bar .color-picker:focus-within {
+.menu-bar .color-picker:focus-within,
+.menu-bar button.active {
     background-color: rgba(27, 27, 38, .5);
     color: rgba(255, 255, 255, .75);
 }
@@ -102,6 +107,8 @@ body {
 .menu-bar label {
     text-transform: uppercase;
     font-size: .8em;
+    text-align: right;
+    white-space: nowrap;
     cursor: pointer;
 }
 
@@ -180,7 +187,7 @@ body {
     margin: 0;
     padding-left: 24px;
     padding-right: 8px;
-    width: 40px;
+    width: 24px;
     height: 24px;
     line-height: 24px;
     color: #acb0d0;
@@ -232,12 +239,38 @@ input[type=number] {
 }
 
 .canvas .dot-item {
+    position: relative;
     display: inline-block;
     user-select: none;
 }
 
-.canvas .dot-item.active {
+.canvas .dot-item::after {
+    content: " ";
+    display: inline-block;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
+    pointer-events: none;
+    box-sizing: border-box;
+    border: 1px solid rgba(27, 27, 38, 1);
+}
+
+.canvas .dot-item.active::after {
     background-color: rgba(172, 176, 208, 1);
+}
+
+.canvas .dot-item.active.selected::after {
+    background-color: white;
+}
+
+.canvas .dot-item.selected {
+    cursor: grab;
+}
+
+.canvas .dot-item.selected::after {
+    outline: 1px dotted rgba(120, 124, 153, 1);
 }
 
 .canvas .dot-item:hover {
@@ -289,7 +322,14 @@ input[type=number] {
 let canvas_width = 32;
 let canvas_height = 32;
 let canvas_content = [];
+
 let draw_active = false;
+let draw_start_element = null;
+
+const PEN_TOOL = 0,
+      SELECT_TOOL = 1,
+      LINE_TOOL = 2;
+let tool_active = PEN_TOOL;
 
 /**
  * @type HTMLDivElement
@@ -332,6 +372,22 @@ window.onload = () => {
         else if (event.ctrlKey && event.key == 'e') {
             event.preventDefault();
             exportImage();
+        }
+        else if (event.ctrlKey && event.key == '1') {
+            event.preventDefault();
+            switchTool(PEN_TOOL);
+        }
+        else if (event.ctrlKey && event.key == '2') {
+            event.preventDefault();
+            switchTool(SELECT_TOOL);
+        }
+        else if (tool_active == SELECT_TOOL && event.key == 'Escape') {
+            event.preventDefault();
+            switchTool(SELECT_TOOL);
+        }
+        else if (tool_active == SELECT_TOOL && event.key == 'Delete') {
+            event.preventDefault();
+            deleteSelection();
         }
     })
 
@@ -422,12 +478,22 @@ function clearCanvas() {
             const dot_el = document.createElement("div");
             dot_el.title = `x: ${x}, y: ${y}`;
             dot_el.classList.add("dot-item");
+            dot_el.dataset.x = x;
+            dot_el.dataset.y = y;
             canvas.appendChild(dot_el);
 
             dot_el.addEventListener("pointerdown", event => {
                 draw_type = event.button;
                 draw_active = true;
-                dot_el.classList.toggle("active", draw_type == 0);
+                draw_start_element = dot_el;
+                switch (tool_active) {
+                    case PEN_TOOL:
+                        dot_el.classList.toggle("active", draw_type == 0);
+                        break;
+                    case SELECT_TOOL:
+                        dot_el.classList.toggle("selected", draw_type == 0);
+                        break;
+                }
             })
 
             dot_el.addEventListener("pointermove", event => {
@@ -437,7 +503,14 @@ function clearCanvas() {
                     canvas_addState();
                     return;
                 }
-                dot_el.classList.toggle("active", draw_type == 0);
+                switch (tool_active) {
+                    case PEN_TOOL:
+                        dot_el.classList.toggle("active", draw_type == 0);
+                        break;
+                    case SELECT_TOOL:
+                        boxSelection(draw_start_element, dot_el);
+                        break;
+                }
             })
 
             dot_el.addEventListener("pointerenter", () => {
@@ -691,6 +764,60 @@ function initNumberPickers() {
         wrapper.appendChild(plus_btn);
     }
 }
+
+
+function switchTool(tool) {
+    switch (tool) {
+        case PEN_TOOL:
+            break;
+        case SELECT_TOOL:
+            break;
+        default:
+            return;
+    }
+
+    removeSelection();
+    document.getElementById(`tool_${tool_active}`).classList.remove("active");
+
+    tool_active = tool;
+
+    document.getElementById(`tool_${tool_active}`).classList.add("active");
+}
+
+
+function removeSelection() {
+    const selected_dots = document.querySelectorAll(".dot-item.selected");
+
+    for (dot of selected_dots)
+        dot.classList.remove("selected");
+}
+
+
+function deleteSelection() {
+    const selected_dots = document.querySelectorAll(".dot-item.selected");
+
+    for (dot of selected_dots)
+        dot.classList.remove("active");
+
+    canvas_addState();
+
+    removeSelection();
+}
+
+
+function boxSelection(src_el, dest_el) {
+    const { x: src_x, y: src_y } = src_el.dataset;
+    const { x: dest_x, y: dest_y } = dest_el.dataset;
+    
+    const [ start_x, start_y ] = [Math.min(src_x, dest_x), Math.min(src_y, dest_y)];
+    const [ end_x, end_y ] = [Math.max(src_x, dest_x), Math.max(src_y, dest_y)];
+
+    for (let y = start_y; y <= end_y; y++) {
+        for (let x = start_x; x <= end_x; x++) {
+            canvas.children[y * canvas_width + x].classList.toggle("selected", draw_type == 0);
+        }
+    }
+}
 </script>
 <div class="menu-bar">
     <div class="left-side">
@@ -767,6 +894,61 @@ function initNumberPickers() {
         >
             <path d="M21 7v6h-6" />
             <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7" />
+        </svg></button>
+    </div>
+    <div class="middle-part">
+        <button class="icon active" title="Pen Tool" id="tool_0" onclick="switchTool(PEN_TOOL)"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 19l7-7 3 3-7 7-3-3z" />
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+            <path d="M2 2l7.586 7.586" />
+            <circle cx="11" cy="11" r="2" />
+        </svg></button>
+        <button class="icon" title="Select Tool" id="tool_1" onclick="switchTool(SELECT_TOOL)"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 2a2 2 0 00-2 2" />
+            <line x1="8" y1="2" x2="10" y2="2" />
+            <line x1="14" y1="2" x2="16" y2="2" />
+            <path d="M4 22a2 2 0 01-2-2" />
+            <line x1="22" y1="8" x2="22" y2="10" />
+            <line x1="22" y1="14" x2="22" y2="16" />
+            <path d="M22 20a2 2 0 01-2 2" />
+            <line x1="14" y1="22" x2="16" y2="22" />
+            <line x1="8" y1="22" x2="10" y2="22" />
+            <path d="M20 2a2 2 0 012 2" />
+            <line x1="2" y1="14" x2="2" y2="16" />
+            <line x1="2" y1="8" x2="2" y2="10" />
+        </svg></button>
+        <button disabled class="icon" title="Line Tool" id="tool_2" onclick="switchTool(LINE_TOOL)"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M2 2l20 20" />
         </svg></button>
     </div>
     <div class="right-side">
