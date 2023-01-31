@@ -596,6 +596,11 @@ function canvas_addState(state) {
     if (!state)
         state = canvas_getState();
 
+    prev_state = history_currentState();
+
+    if (prev_state == state)
+        return;
+
     history_add(state);
     updatePreview(state);
     sessionStorage.setItem("current_state", state);
