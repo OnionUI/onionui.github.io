@@ -72,12 +72,16 @@ body {
     height: 21px;
 }
 
-.menu-bar button:hover, .menu-bar .color-picker:hover {
+.menu-bar button:hover,
+.menu-bar .color-picker:hover,
+.menu-bar .number-picker button:hover {
     background-color: rgba(120, 124, 153, .5);
     color: rgba(255, 255, 255, .75);
 }
 
-.menu-bar button:active, .menu-bar .color-picker:active {
+.menu-bar button:active,
+.menu-bar .color-picker:active,
+.menu-bar .color-picker:focus-within {
     background-color: rgba(27, 27, 38, .5);
     color: rgba(255, 255, 255, .75);
 }
@@ -91,7 +95,7 @@ body {
     display: inline-block;
     width: 1px;
     height: 30px;
-    background-color: rgba(120, 124, 153, .1);
+    background-color: rgba(120, 124, 153, .25);
     margin: 0 10px;
 }
 
@@ -101,7 +105,7 @@ body {
     cursor: pointer;
 }
 
-.menu-bar .color-picker {
+.menu-bar .color-picker, .menu-bar .number-picker {
     display: flex;
     align-items: center;
     border-radius: 4px;
@@ -109,7 +113,7 @@ body {
     height: 40px;
 }
 
-.menu-bar .color-picker label {
+.menu-bar .color-picker label, .menu-bar .number-picker label {
     padding: 0 12px;
     height: 40px;
     display: flex;
@@ -134,6 +138,77 @@ body {
 .menu-bar .color-picker input::-moz-color-swatch {
     border-radius: 50%;
     border: 1px solid rgba(27, 27, 38, 1);
+}
+
+.menu-bar .number-picker .input-wrapper {
+    display: inline-block;
+    border: 1px solid rgba(172, 176, 208, .5);
+    border-radius: 4px;
+    display: flex;
+    position: relative;
+    margin-right: 8px;
+    overflow: hidden;
+}
+
+.menu-bar .number-picker .input-wrapper:focus-within {
+    background-color: rgba(27, 27, 38, .5);
+    border-color: rgba(172, 176, 208, 1);
+}
+
+.menu-bar .number-picker .input-wrapper:before {
+    content: "px";
+    display: flex;
+    align-items: center;
+    color: rgba(172, 176, 208, .5);
+    border-right: 1px solid rgba(172, 176, 208, .5);
+    background-color: rgba(27, 27, 38, .25);
+    position: absolute;
+    top: 0;
+    height: 100%;
+    padding: 0 4px;
+    text-transform: uppercase;
+    font-size: .65rem;
+    pointer-events: none;
+}
+
+.menu-bar .number-picker input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    border: 0;
+    margin: 0;
+    padding-left: 24px;
+    padding-right: 8px;
+    width: 40px;
+    height: 24px;
+    line-height: 24px;
+    color: #acb0d0;
+    font-size: .75rem;
+    text-align: right;
+}
+
+input:focus {
+    outline: none;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.menu-bar .number-picker button {
+    width: 24px;
+    height: 26px;
+    border-left: 1px solid rgba(172, 176, 208, .5);
+    background-color: rgba(27, 27, 38, .25);
+    border-radius: 0;
+    z-index: 1;
 }
 
 .canvas-container {
@@ -284,6 +359,8 @@ window.onload = () => {
     let session_filename = sessionStorage.getItem("current-filename") || DEFAULT_FILENAME;
 
     document.getElementById("export_color").value = localStorage.getItem("export-color") || "#ffffff";
+    document.getElementById("dot_size").value = localStorage.getItem("dot-size") || "3";
+    document.getElementById("dot_gap").value = localStorage.getItem("dot-gap") || "1";
     
     clearCanvas();
     canvas_setState(current_state);
@@ -291,6 +368,7 @@ window.onload = () => {
 
     updateActiveFilename(session_filename);
 
+    initNumberPickers();
 };
 
 
@@ -522,6 +600,8 @@ function updateStatus(text) {
 function updatePreview(state) {
     const preview = document.getElementById("preview");
     const export_color = document.getElementById("export_color").value;
+    const dot_size = parseInt(document.getElementById("dot_size").value);
+    const dot_gap = parseInt(document.getElementById("dot_gap").value);
 
     if (!state)
         state = history_currentState();
@@ -530,9 +610,10 @@ function updatePreview(state) {
         state = `${canvas_width}:${canvas_height}:`;
     
     const [ w, h, b ] = state.split(":");
-    
-    preview.width = w * 4;
-    preview.height = h * 4;
+    const total_size = dot_size + dot_gap;
+
+    preview.width = w * total_size;
+    preview.height = h * total_size;
 
     const ctx = preview.getContext("2d");
 
@@ -543,11 +624,13 @@ function updatePreview(state) {
 
             ctx.beginPath();
             ctx.fillStyle = export_color;
-            ctx.fillRect(x * 4, y * 4, 3, 3);
+            ctx.fillRect(x * total_size, y * total_size, dot_size, dot_size);
         }
     }
 
     localStorage.setItem("export-color", export_color);
+    localStorage.setItem("dot-size", dot_size);
+    localStorage.setItem("dot-gap", dot_gap);
 }
 
 
@@ -571,6 +654,37 @@ async function exportImage() {
         await fileStream.write(blob);
         await fileStream.close();
     })
+}
+
+
+function initNumberPickers() {
+    const pickers = document.querySelectorAll("input[type=number]");
+
+    for (let picker of pickers) {
+        const wrapper = picker.parentElement;
+
+        const minus_btn = document.createElement("button");
+        minus_btn.innerHTML = "&minus;";
+        minus_btn.addEventListener("click", () => {
+            const value = parseInt(picker.value);
+            if (value <= picker.min)
+                return;
+            picker.value = value - 1;
+            picker.onchange();
+        })
+        wrapper.appendChild(minus_btn);
+
+        const plus_btn = document.createElement("button");
+        plus_btn.innerHTML = "&plus;";
+        plus_btn.addEventListener("click", () => {
+            const value = parseInt(picker.value);
+            if (value >= picker.max)
+                return;
+            picker.value = value + 1;
+            picker.onchange();
+        })
+        wrapper.appendChild(plus_btn);
+    }
 }
 </script>
 <div class="menu-bar">
@@ -651,6 +765,14 @@ async function exportImage() {
         </svg></button>
     </div>
     <div class="right-side">
+        <div class="number-picker">
+            <label for="dot_size">Dot Size</label>
+            <div class="input-wrapper"><input type="number" id="dot_size" min="1" max="256" step="1" value="3" onchange="updatePreview()"></div>
+        </div>
+        <div class="number-picker">
+            <label for="dot_gap">Dot Gap</label>
+            <div class="input-wrapper"><input type="number" id="dot_gap" min="0" max="256" step="1" value="1" onchange="updatePreview()"></div>
+        </div>
         <div class="color-picker">
             <label for="export_color">Color<input type="color" id="export_color" value="#ffffff" onchange="updatePreview()"></label>
         </div>
