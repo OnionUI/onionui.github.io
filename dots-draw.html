@@ -287,7 +287,7 @@ window.onload = () => {
     
     clearCanvas();
     canvas_setState(current_state);
-    canvas_updateState();
+    canvas_updateState(current_state);
 
     updateActiveFilename(session_filename);
 
@@ -378,7 +378,7 @@ function loadState(state) {
     clearCanvas();
     resetUndoHistory();
     canvas_setState(state);
-    canvas_updateState();
+    canvas_updateState(state);
 }
 
 
@@ -430,9 +430,12 @@ async function saveFile() {
     updateActiveFilename(fileHandle.name);
 }
 
-function canvas_updateState() {
-    const state = canvas_getState();
+function canvas_updateState(state) {
+    if (!state)
+        state = canvas_getState();
+
     history_add(state);
+    updatePreview(state);
     sessionStorage.setItem("current_state", state);
 }
 
@@ -460,7 +463,6 @@ function canvas_setState(state) {
             canvas.children[i].classList.toggle("active", i < b.length ? b[i] == '1' : false);
 
     sessionStorage.setItem("current_state", state);
-    updatePreview(state);
 }
 
 function history_currentState() {
