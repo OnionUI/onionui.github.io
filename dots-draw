@@ -1,0 +1,678 @@
+<!doctype html>
+<html>
+<head>
+<title>Dots-draw</title>
+<style>
+body {
+    background-color: #1b1b26;
+    color: rgba(172, 176, 208, 1);
+    font-family: sans-serif;
+    font-size: 16px;
+    margin: 0;
+    margin-top: 60px;
+    overflow: hidden;
+}
+
+.drop-area-highlight::after {
+    content: " ";
+    position: fixed;
+    width: 100vw;
+    height: calc(100vh - 60px);
+    top: 60px;
+    left: 0;
+    border: 4px solid rgba(255,255,255,.5);
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+.menu-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100vw;
+    height: 60px;
+    background-color: #383845;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.menu-bar > div {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    padding: 0 12px;
+}
+
+.menu-bar div.right-side {
+    justify-content: right;
+}
+
+.menu-bar button {
+    background-color: transparent;
+    border: 0;
+    color: #acb0d0;
+    border-radius: 4px;
+    height: 40px;
+    padding: 0 12px;
+    text-transform: uppercase;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-bar button.icon {
+    padding: 0 8px;
+}
+
+.menu-bar button svg {
+    stroke: #acb0d0;
+    stroke-width: 1;
+    height: 21px;
+}
+
+.menu-bar button:hover, .menu-bar .color-picker:hover {
+    background-color: rgba(120, 124, 153, .5);
+    color: rgba(255, 255, 255, .75);
+}
+
+.menu-bar button:active, .menu-bar .color-picker:active {
+    background-color: rgba(27, 27, 38, .5);
+    color: rgba(255, 255, 255, .75);
+}
+
+.menu-bar button:disabled {
+    opacity: .25;
+    pointer-events: none;
+}
+
+.menu-bar .separator {
+    display: inline-block;
+    width: 1px;
+    height: 30px;
+    background-color: rgba(120, 124, 153, .1);
+    margin: 0 10px;
+}
+
+.menu-bar label {
+    text-transform: uppercase;
+    font-size: .8em;
+    cursor: pointer;
+}
+
+.menu-bar .color-picker {
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 40px;
+}
+
+.menu-bar .color-picker label {
+    padding: 0 12px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.menu-bar .color-picker input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding: 0;
+    background-color: transparent;
+    border: 0;
+    width: 24px;
+    cursor: pointer;
+    margin-left: 8px;
+}
+.menu-bar .color-picker input::-webkit-color-swatch {
+    border-radius: 50%;
+    border: 1px solid rgba(27, 27, 38, 1);
+}
+.menu-bar .color-picker input::-moz-color-swatch {
+    border-radius: 50%;
+    border: 1px solid rgba(27, 27, 38, 1);
+}
+
+.canvas-container {
+    width: 100vw;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.canvas {
+    --canvas-width: 32;
+    --canvas-height: 32;
+    width: calc(80vh * (var(--canvas-width) / var(--canvas-height)));
+    height: calc(80vh);
+    border: 1px solid rgba(120, 124, 153, .25);
+    display: grid;
+    grid-template-columns: repeat(var(--canvas-width), 1fr);
+    grid-template-rows: repeat(var(--canvas-height), 1fr);
+}
+
+.canvas .dot-item {
+    display: inline-block;
+    user-select: none;
+}
+
+.canvas .dot-item.active {
+    background-color: rgba(172, 176, 208, 1);
+}
+
+.canvas .dot-item:hover {
+    background-color: rgba(120, 124, 153, .25);
+    outline: 1px solid rgba(120, 124, 153, .5);
+    z-index: 1;
+}
+
+.canvas .dot-item.active:hover {
+    background-color: rgba(172, 176, 208, .75);
+    outline-color: rgba(27, 27, 38, .5);
+}
+
+.preview-container {
+    position: fixed;
+    top: 70px;
+    right: 10px;
+    border: 1px solid rgba(120, 124, 153, .25);
+    background-color: rgba(27, 27, 38, 1);
+}
+
+.status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8em;
+    pointer-events: none;
+}
+
+.status-bar div#status {
+    visibility: hidden;
+    border: 1px solid rgba(172, 176, 208, .25);
+    border-radius: 4px;
+    padding: 4px 6px;
+}
+
+.status-bar div#status.has-content {
+    visibility: visible;
+}
+</style>
+</head>
+<body>
+<script>
+let canvas_width = 32;
+let canvas_height = 32;
+let canvas_content = [];
+let draw_active = false;
+
+/**
+ * @type HTMLDivElement
+ */
+let canvas = null;
+
+let undo_history = [];
+let undo_reverse_index = 0;
+
+let current_filename = "";
+
+
+const DEFAULT_FILENAME = "Untitled.dots";
+
+
+window.onload = () => {
+    canvas = document.getElementById("app_canvas");
+
+    window.addEventListener("contextmenu", event => {
+        event.preventDefault();
+    })
+
+    window.addEventListener("keydown", event => {
+        if (event.ctrlKey && event.key == 'z') {
+            event.preventDefault();
+            history_undo();
+        }
+        else if (event.ctrlKey && event.key == 'y') {
+            event.preventDefault();
+            history_redo();
+        }
+        else if (event.ctrlKey && event.key == 's') {
+            event.preventDefault();
+            saveFile();
+        }
+        else if (event.ctrlKey && event.key == 'o') {
+            event.preventDefault();
+            openFile();
+        }
+        else if (event.ctrlKey && event.key == 'e') {
+            event.preventDefault();
+            exportImage();
+        }
+    })
+
+    document.body.addEventListener("pointerup", event => {
+        if (!draw_active) return;
+        draw_active = false;
+        canvas_updateState();
+    })
+
+    ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        document.body.addEventListener(eventName, preventDefaults, false);
+    })
+
+    ;['dragenter', 'dragover'].forEach(eventName => {
+        document.body.addEventListener(eventName, dropArea_highlight, false);
+    })
+
+    ;['dragleave', 'drop'].forEach(eventName => {
+        document.body.addEventListener(eventName, dropArea_unhighlight, false);
+    })
+
+    document.body.addEventListener('drop', openDroppedFile, false)
+
+    let current_state = sessionStorage.getItem("current_state") || "";
+    let session_filename = sessionStorage.getItem("current-filename") || DEFAULT_FILENAME;
+
+    document.getElementById("export_color").value = localStorage.getItem("export-color") || "#ffffff";
+    
+    clearCanvas();
+    canvas_setState(current_state);
+    canvas_updateState();
+
+    updateActiveFilename(session_filename);
+
+};
+
+
+function preventDefaults(event) {
+    event.preventDefault()
+    event.stopPropagation()
+}
+
+function dropArea_highlight() {
+    document.body.classList.add('drop-area-highlight');
+}
+
+function dropArea_unhighlight() {
+    document.body.classList.remove('drop-area-highlight');
+}
+
+
+function newFile(skip_confirm) {
+    if (!skip_confirm && !confirm('Create new canvas?'))
+        return;
+
+    updateActiveFilename(DEFAULT_FILENAME);
+    resetUndoHistory();
+    clearCanvas();
+    canvas_updateState();
+}
+
+
+function resetUndoHistory() {
+    undo_history = [];
+    undo_reverse_index = 0;
+    history_updateButtons();
+}
+
+
+function updateActiveFilename(filename) {
+    current_filename = filename;
+    sessionStorage.setItem("current-filename", current_filename);
+    document.title = `${current_filename.replace(/\.[^/.]+$/, "")} - Dots-draw`;
+}
+
+
+function clearCanvas() {
+    canvas.innerHTML = "";
+
+    canvas.style.setProperty("--canvas-width", canvas_width);
+    canvas.style.setProperty("--canvas-height", canvas_height);
+
+    for (let y = 0; y < canvas_height; y++) {
+        for (let x = 0; x < canvas_width; x++) {
+            const dot_el = document.createElement("div");
+            dot_el.title = `x: ${x}, y: ${y}`;
+            dot_el.classList.add("dot-item");
+            canvas.appendChild(dot_el);
+
+            dot_el.addEventListener("pointerdown", event => {
+                draw_type = event.button;
+                draw_active = true;
+                dot_el.classList.toggle("active", draw_type == 0);
+            })
+
+            dot_el.addEventListener("pointermove", event => {
+                if (!draw_active) return;
+                if (event.pressure == 0) {
+                    draw_active = false;
+                    canvas_updateState();
+                    return;
+                }
+                dot_el.classList.toggle("active", draw_type == 0);
+            })
+
+            dot_el.addEventListener("pointerenter", () => {
+                updateStatus(dot_el.title);
+            })
+
+            dot_el.addEventListener("pointerleave", () => {
+                updateStatus();
+            })
+        }
+    }
+}
+
+
+function loadState(state) {
+    clearCanvas();
+    resetUndoHistory();
+    canvas_setState(state);
+    canvas_updateState();
+}
+
+
+async function openFile() {
+    const [fileHandle] = await window.showOpenFilePicker({
+        types: [{
+            description: 'Dots-draw File',
+            accept: { 'text/plain': ['.dots'] },
+        }],
+    }).catch(e => {});
+
+    if (!fileHandle)
+        return;
+
+    const file = await fileHandle.getFile();
+    const state = await file.text();
+    loadState(state);
+    updateActiveFilename(fileHandle.name);
+}
+
+function openDroppedFile(event) {
+    let [file, ...rest] = event.dataTransfer.files;
+    
+    const reader = new FileReader();
+    reader.onload = event => {
+        const state = event.target.result;
+        loadState(state);
+        updateActiveFilename(file.name);
+    }
+    reader.readAsText(file);
+}
+
+async function saveFile() {
+    const fileHandle = await window.showSaveFilePicker({
+        suggestedName: current_filename,
+        types: [{
+            description: 'Dots-draw File',
+            accept: { 'text/plain': ['.dots'] }
+        }]
+    }).catch(e => {});
+
+    if (!fileHandle)
+        return;
+
+    const fileStream = await fileHandle.createWritable();
+    await fileStream.write(new Blob([canvas_getState()], {type: "text/plain"}));
+    await fileStream.close();
+
+    updateActiveFilename(fileHandle.name);
+}
+
+function canvas_updateState() {
+    const state = canvas_getState();
+    history_add(state);
+    sessionStorage.setItem("current_state", state);
+}
+
+function canvas_getState() {
+    let s = `${canvas_width}:${canvas_height}:`;
+    for (dot_el of canvas.children)
+        s += dot_el.classList.contains("active") ? '1' : '0';
+    return s;
+}
+
+function canvas_setState(state) {
+    if (!state)
+        state = `${canvas_width}:${canvas_height}:`;
+
+    const [ w, h, b ] = state.split(":");
+
+    if (canvas_width != w || canvas_height != h) {
+        canvas_width = w;
+        canvas_height = h;
+        clearCanvas();
+    }
+
+    for (let i = 0; i < canvas.children.length; i++)
+        if (i < canvas.children.length)
+            canvas.children[i].classList.toggle("active", i < b.length ? b[i] == '1' : false);
+
+    sessionStorage.setItem("current_state", state);
+    updatePreview(state);
+}
+
+function history_currentState() {
+    return undo_history[undo_history.length - 1 - undo_reverse_index]
+}
+
+function history_add(state) {
+    if (undo_reverse_index > 0 && undo_history.length >= undo_reverse_index) {
+        undo_history.splice(undo_history.length - undo_reverse_index, undo_reverse_index);
+        undo_reverse_index = 0;
+    }
+    undo_history.push(state);
+    history_updateButtons();
+}
+
+function history_undo(only_check) {
+    if (undo_history.length - 1 <= undo_reverse_index)
+        return false;
+
+    if (only_check) return true;
+
+    undo_reverse_index++;
+    canvas_setState(history_currentState());
+    history_updateButtons();
+
+    return true;
+}
+
+function history_redo(only_check) {
+    if (undo_reverse_index == 0)
+        return false;
+
+    if (only_check) return true;
+
+    undo_reverse_index--;
+    canvas_setState(history_currentState());
+    history_updateButtons();
+
+    return true;
+}
+
+function history_updateButtons() {
+    const button_undo = document.getElementById("button_undo");
+    const button_redo = document.getElementById("button_redo");
+    button_undo.disabled = !history_undo(true);
+    button_redo.disabled = !history_redo(true);
+}
+
+
+function updateStatus(text) {
+    const status_el = document.getElementById("status");
+    status_el.innerHTML = text || "";
+    status_el.classList.toggle("has-content", !!text);
+}
+
+
+function updatePreview(state) {
+    const preview = document.getElementById("preview");
+    const export_color = document.getElementById("export_color").value;
+
+    if (!state)
+        state = history_currentState();
+    
+    if (!state)
+        state = `${canvas_width}:${canvas_height}:`;
+    
+    const [ w, h, b ] = state.split(":");
+    
+    preview.width = w * 4;
+    preview.height = h * 4;
+
+    const ctx = preview.getContext("2d");
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            if (b[y * w + x] == '0')
+                continue;
+
+            ctx.beginPath();
+            ctx.fillStyle = export_color;
+            ctx.fillRect(x * 4, y * 4, 3, 3);
+        }
+    }
+
+    localStorage.setItem("export-color", export_color);
+}
+
+
+async function exportImage() {
+    const preview = document.getElementById("preview");
+
+    const fileHandle = await window.showSaveFilePicker({
+        suggestedName: current_filename.replace(/\.[^/.]+$/, ""),
+        types: [{
+            description: 'PNG Image',
+            accept: { 'image/png': ['.png'] }
+        }]
+    }).catch(e => {});
+
+    if (!fileHandle)
+        return;
+
+    const fileStream = await fileHandle.createWritable();
+
+    preview.toBlob(async blob => {
+        await fileStream.write(blob);
+        await fileStream.close();
+    })
+}
+</script>
+<div class="menu-bar">
+    <div class="left-side">
+        <button class="icon" title="New file" onclick="newFile()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M4 22h14a2 2 0 002-2V7.5L14.5 2H6a2 2 0 00-2 2v4" />
+            <path d="M14 2v6h6" />
+            <path d="M3 15h6" />
+            <path d="M6 12v6" />
+        </svg></button>
+        <div class="separator"></div>
+        <button class="icon" title="Open file (Ctrl+O)" onclick="openFile()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M6 17l2-5h14l-3 8a2 2 0 01-2 1H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h7a2 2 0 012 2v4" />
+        </svg></button>
+        <button class="icon" title="Save as... (Ctrl+S)" onclick="saveFile()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+            <polyline points="17 21 17 13 7 13 7 21" />
+            <polyline points="7 3 7 8 15 8" />
+        </svg></button>
+        <div class="separator"></div>
+        <button class="icon" title="Undo (Ctrl+Z)" disabled id="button_undo" onclick="history_undo()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M3 7v6h6" />
+            <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13" />
+        </svg></button>
+        <button class="icon" title="Redo (Ctrl+Y)" disabled id="button_redo" onclick="history_redo()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M21 7v6h-6" />
+            <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7" />
+        </svg></button>
+    </div>
+    <div class="right-side">
+        <div class="color-picker">
+            <label for="export_color">Color<input type="color" id="export_color" value="#ffffff" onchange="updatePreview()"></label>
+        </div>
+        <div class="separator"></div>
+        <button class="icon" title="Export image... (Ctrl+E)" onclick="exportImage()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+            <polyline points="16 6 12 2 8 6" />
+            <line x1="12" y1="2" x2="12" y2="15" />
+        </svg></button>
+    </div>
+      <!-- Icons from: https://www.svgrepo.com/collection/lucide-line-icons -->
+</div>
+<div class="canvas-container"><div class="canvas" id="app_canvas"></div></div>
+<div class="preview-container"><canvas id="preview" width="0" height="0"></canvas></canvas></div>
+<div class="status-bar"><div id="status"></div></div>
+</body>
+</html>
