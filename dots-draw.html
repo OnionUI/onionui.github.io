@@ -458,28 +458,27 @@ window.onload = () => {
     setTimeout(() => {
         updateActiveFilename(session_filename);
     }, 150)
+
+    if ('launchQueue' in window && 'files' in LaunchParams.prototype) {
+        launchQueue.setConsumer(async launchParams => {
+            if (!launchParams.files.length)
+                return;
+
+            const [fileHandle] = launchParams.files;
+
+            console.log(fileHandle);
+
+            const file = await fileHandle.getFile();
+            console.log(file);
+
+            const state = await file.text();
+            console.log(state);
+            
+            loadState(state);
+            updateActiveFilename(fileHandle.name);
+        });
+    }
 };
-
-
-if ('launchQueue' in window && 'files' in LaunchParams.prototype) {
-    launchQueue.setConsumer(async launchParams => {
-        if (!launchParams.files.length)
-            return;
-
-        const [fileHandle] = launchParams.files;
-
-        console.log(fileHandle);
-
-        const file = await fileHandle.getFile();
-        console.log(file);
-
-        const state = await file.text();
-        console.log(state);
-        
-        loadState(state);
-        updateActiveFilename(fileHandle.name);
-    });
-}
 
 
 function isTextInput(target) {
