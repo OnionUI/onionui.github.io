@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+<head>
+<title>Dots-draw</title>
+<meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#383845">
+<link rel="manifest" href="/dots-draw.webmanifest">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<script src="app.js"></script>
+<div class="menu-bar">
+    <div class="left-side">
+        <button class="icon" title="New file" onclick="newFile()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M4 22h14a2 2 0 002-2V7.5L14.5 2H6a2 2 0 00-2 2v4" />
+            <path d="M14 2v6h6" />
+            <path d="M3 15h6" />
+            <path d="M6 12v6" />
+        </svg></button>
+        <div class="separator"></div>
+        <button class="icon" title="Open file (Ctrl+O)" onclick="openFile()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M6 17l2-5h14l-3 8a2 2 0 01-2 1H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h7a2 2 0 012 2v4" />
+        </svg></button>
+        <button class="icon" title="Save as... (Ctrl+S)" onclick="saveFile()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+            <polyline points="17 21 17 13 7 13 7 21" />
+            <polyline points="7 3 7 8 15 8" />
+        </svg></button>
+        <div class="separator"></div>
+        <button class="icon" title="Undo (Ctrl+Z)" disabled id="button_undo" onclick="history_undo()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M3 7v6h6" />
+            <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13" />
+        </svg></button>
+        <button class="icon" title="Redo (Ctrl+Y)" disabled id="button_redo" onclick="history_redo()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M21 7v6h-6" />
+            <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7" />
+        </svg></button>
+    </div>
+    <div class="middle-part">
+        <button class="icon active" title="Pen Tool" id="tool_0" onclick="switchTool(PEN_TOOL)"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 19l7-7 3 3-7 7-3-3z" />
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+            <path d="M2 2l7.586 7.586" />
+            <circle cx="11" cy="11" r="2" />
+        </svg></button>
+        <button class="icon" title="Select Tool" id="tool_1" onclick="switchTool(SELECT_TOOL)"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 2a2 2 0 00-2 2" />
+            <line x1="8" y1="2" x2="10" y2="2" />
+            <line x1="14" y1="2" x2="16" y2="2" />
+            <path d="M4 22a2 2 0 01-2-2" />
+            <line x1="22" y1="8" x2="22" y2="10" />
+            <line x1="22" y1="14" x2="22" y2="16" />
+            <path d="M22 20a2 2 0 01-2 2" />
+            <line x1="14" y1="22" x2="16" y2="22" />
+            <line x1="8" y1="22" x2="10" y2="22" />
+            <path d="M20 2a2 2 0 012 2" />
+            <line x1="2" y1="14" x2="2" y2="16" />
+            <line x1="2" y1="8" x2="2" y2="10" />
+        </svg></button>
+        <button disabled class="icon" title="Line Tool" id="tool_2" onclick="switchTool(LINE_TOOL)"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M2 2l20 20" />
+        </svg></button>
+    </div>
+    <div class="right-side">
+        <div class="number-picker">
+            <label for="dot_size">Dot Size</label>
+            <div class="input-wrapper"><input type="number" id="dot_size" min="1" max="256" step="1" value="3" onchange="updatePreview()"></div>
+        </div>
+        <div class="number-picker">
+            <label for="dot_gap">Dot Gap</label>
+            <div class="input-wrapper"><input type="number" id="dot_gap" min="0" max="256" step="1" value="1" onchange="updatePreview()"></div>
+        </div>
+        <div class="color-picker">
+            <label for="export_color">Color<input type="color" id="export_color" value="#ffffff" onchange="updatePreview()"></label>
+        </div>
+        <div class="separator"></div>
+        <button class="icon" title="Export image... (Ctrl+E)" onclick="exportImage()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+            <polyline points="16 6 12 2 8 6" />
+            <line x1="12" y1="2" x2="12" y2="15" />
+        </svg></button>
+    </div>
+      <!-- Icons from: https://www.svgrepo.com/collection/lucide-line-icons -->
+</div>
+<div class="canvas-container">
+    <div>
+        <div class="bg-image"></div>
+        <div class="canvas" id="app_canvas"></div>
+    </div>
+</div>
+<div class="preview-container">
+    <canvas id="preview" width="0" height="0"></canvas>
+</div>
+<div class="status-bar">
+    <div id="status"></div>
+</div>
+</body>
+</html>

@@ -4,35 +4,35 @@
     "description": "Draw dot grids",
     "icons": [
         {
-            "src": "/res/dots-draw-icon-96.png",
+            "src": "/dots-draw/res/dots-draw-icon-96.png",
             "type": "image/png",
             "sizes": "96x96"
         },
         {
-            "src": "/res/dots-draw-icon-128.png",
+            "src": "/dots-draw/res/dots-draw-icon-128.png",
             "type": "image/png",
             "sizes": "128x128"
         },
         {
-            "src": "/res/dots-draw-icon-256.png",
+            "src": "/dots-draw/res/dots-draw-icon-256.png",
             "type": "image/png",
             "sizes": "256x256"
         },
         {
-            "src": "/res/dots-draw-icon-512.png",
+            "src": "/dots-draw/res/dots-draw-icon-512.png",
             "type": "image/png",
             "sizes": "512x512"
         }
     ],
-    "id": "/dots-draw.html",
-    "start_url": "/dots-draw.html",
+    "id": "/dots-draw",
+    "start_url": "/dots-draw",
     "background_color": "#1b1b26",
     "display": "standalone",
     "scope": "/",
     "theme_color": "#383845",
     "file_handlers": [
         {
-            "action": "/dots-draw.html",
+            "action": "/dots-draw",
             "accept": {
                 "text/csv": [
                     ".dots"
@@ -40,7 +40,7 @@
             },
             "icons": [
                 {
-                    "src": "/res/dots-draw-icon-256.png",
+                    "src": "/dots-draw/res/dots-draw-icon-256.png",
                     "sizes": "256x256",
                     "type": "image/png"
                 }
