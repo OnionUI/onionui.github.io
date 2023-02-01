@@ -6,8 +6,7 @@ let draw_active = false;
 let draw_start_element = null;
 
 const PEN_TOOL = 0,
-      SELECT_TOOL = 1,
-      LINE_TOOL = 2;
+      SELECT_TOOL = 1;
 let tool_active = PEN_TOOL;
 
 /**

@@ -34,7 +34,7 @@
         {
             "action": "/dots-draw/",
             "accept": {
-                "text/csv": [
+                "text/plain": [
                     ".dots"
                 ]
             },
