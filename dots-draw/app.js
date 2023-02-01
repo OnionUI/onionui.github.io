@@ -51,6 +51,12 @@ window.onload = () => {
             event.preventDefault();
             exportImage();
         }
+        else if (event.ctrlKey && event.key == 'a') {
+            event.preventDefault();
+            switchTool(SELECT_TOOL);
+            draw_type = 0;
+            boxSelection(canvas.children[0], canvas.children[canvas.children.length - 1]);
+        }
         else if (!isTextInput(event.target) && event.key == '1') {
             event.preventDefault();
             switchTool(PEN_TOOL);
@@ -95,6 +101,13 @@ window.onload = () => {
     document.getElementById("export_color").value = localStorage.getItem("export-color") || "#ffffff";
     document.getElementById("dot_size").value = localStorage.getItem("dot-size") || "3";
     document.getElementById("dot_gap").value = localStorage.getItem("dot-gap") || "1";
+
+    document.getElementById("bg_opacity").value = sessionStorage.getItem("bg-opacity") || "20";
+    document.getElementById("int_scalar").value = sessionStorage.getItem("int-scalar") || "1";
+    document.getElementById("bg_offset_x").value = sessionStorage.getItem("bg-offset-x") || "0";
+    document.getElementById("bg_offset_y").value = sessionStorage.getItem("bg-offset-y") || "0";
+
+    loadBackgroundImage(sessionStorage.getItem("bg-image-uri"), false);
     
     clearCanvas();
     canvas_setState(current_state);
@@ -284,6 +297,101 @@ async function saveFile() {
     updateActiveFilename(fileHandle.name);
 }
 
+
+let backgroundImage = null;
+
+
+async function importImage() {
+    const [fileHandle] = await window.showOpenFilePicker({
+        types: [{
+            description: 'Image Files',
+            accept: { 'text/plain': ['.png', '.jpg', '.jpeg', '.bmp', '.gif'] },
+        }],
+    }).catch(e => {});
+
+    if (!fileHandle)
+        return;
+
+    const file = await fileHandle.getFile();
+    const data_uri = URL.createObjectURL(file);
+    
+    loadBackgroundImage(data_uri, true);
+}
+
+function loadBackgroundImage(data_uri, cache) {
+    if (!data_uri) {
+        clearBackground();
+        return;
+    }
+
+    console.log(data_uri);
+
+    const bg_image = document.getElementById("bg_image");
+    const ctx = bg_image.getContext("2d");
+    const img = document.createElement("img");
+
+    img.onload = () => {
+        bg_image.width = img.width;
+        bg_image.height = img.height;
+        
+        ctx.clearRect(0, 0, bg_image.width, bg_image.height);
+        ctx.drawImage(img, 0, 0);
+
+        bg_image.style.setProperty("--scale", bg_image.width / canvas_width);
+        document.body.classList.add("has-bg-image");
+
+        if (cache) {
+            let int_scalar = Math.floor(img.height / canvas_height);
+            document.getElementById("int_scalar").value = int_scalar;
+            updateIntScalar(int_scalar);
+
+            sessionStorage.setItem("bg-image-uri", bg_image.toDataURL("image/png"));
+        }
+        else {
+            updateBackgroundImage();
+        }
+    }
+
+    img.src = data_uri;
+    backgroundImage = img;
+}
+
+
+function updateIntScalar(int_scalar) {
+    const [ w, h ] = [canvas_width * int_scalar, canvas_height * int_scalar];
+    let [ offset_x, offset_y ] = [
+        Math.floor((w - bg_image.width) / 2),
+        Math.floor((h - bg_image.height) / 2)
+    ];
+    document.getElementById("bg_offset_x").value = offset_x;
+    document.getElementById("bg_offset_y").value = offset_y;
+    updateBackgroundImage();
+}
+
+function updateBackgroundImage() {
+    const bg_image = document.getElementById("bg_image");
+    const opacity = parseInt(document.getElementById("bg_opacity").value) / 100;
+    const int_scalar = parseInt(document.getElementById("int_scalar").value);
+    const offset_x = parseInt(document.getElementById("bg_offset_x").value);
+    const offset_y = parseInt(document.getElementById("bg_offset_y").value);
+    bg_image.style.opacity = opacity;
+    bg_image.style.setProperty("--int-scalar", int_scalar);
+    bg_image.style.setProperty("--offset-x", offset_x);
+    bg_image.style.setProperty("--offset-y", offset_y);
+    sessionStorage.setItem("bg-opacity", opacity * 100);
+    sessionStorage.setItem("int-scalar", int_scalar);
+    sessionStorage.setItem("bg-offset-x", offset_x);
+    sessionStorage.setItem("bg-offset-y", offset_y);
+}
+
+function clearBackground() {
+    const bg_image = document.getElementById("bg_image");
+    const ctx = bg_image.getContext("2d");
+    ctx.clearRect(0, 0, bg_image.width, bg_image.height);
+    document.body.classList.remove("has-bg-image");
+}
+
+
 function canvas_addState(state) {
     if (!state)
         state = canvas_getState();
@@ -417,6 +525,8 @@ function updatePreview(state) {
     localStorage.setItem("export-color", export_color);
     localStorage.setItem("dot-size", dot_size);
     localStorage.setItem("dot-gap", dot_gap);
+
+    document.getElementById("preview_status").innerHTML = `${preview.width} &times; ${preview.height}`;
 }
 
 
@@ -451,9 +561,11 @@ function initNumberPickers() {
 
         const minus_btn = document.createElement("button");
         minus_btn.innerHTML = "&minus;";
+        minus_btn.tabIndex = "-1";
         minus_btn.addEventListener("click", () => {
             const value = parseInt(picker.value);
-            if (value <= picker.min)
+            const min_value = picker.min != '' ? parseInt(picker.min) : -1;
+            if (min_value != -1 && value <= min_value)
                 return;
             picker.value = value - 1;
             picker.onchange();
@@ -462,9 +574,11 @@ function initNumberPickers() {
 
         const plus_btn = document.createElement("button");
         plus_btn.innerHTML = "&plus;";
+        plus_btn.tabIndex = "-1";
         plus_btn.addEventListener("click", () => {
             const value = parseInt(picker.value);
-            if (value >= picker.max)
+            const max_value = picker.max != '' ? parseInt(picker.max) : -1;
+            if (max_value != -1 && value >= max_value)
                 return;
             picker.value = value + 1;
             picker.onchange();

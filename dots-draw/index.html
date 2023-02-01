@@ -85,6 +85,22 @@
             <path d="M21 7v6h-6" />
             <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7" />
         </svg></button>
+        <div class="separator"></div>
+        <button class="icon" title="Import image... (Ctrl+I)" onclick="importImage()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+        </svg></button>
     </div>
     <div class="middle-part">
         <button class="icon active" title="Pen Tool" id="tool_0" onclick="switchTool(PEN_TOOL)"><svg 
@@ -131,11 +147,11 @@
     <div class="right-side">
         <div class="number-picker">
             <label for="dot_size">Dot Size</label>
-            <div class="input-wrapper"><input type="number" id="dot_size" min="1" max="256" step="1" value="3" onchange="updatePreview()"></div>
+            <div class="input-wrapper" data-units="px"><input type="number" id="dot_size" min="1" max="256" step="1" value="3" onchange="updatePreview()"></div>
         </div>
         <div class="number-picker">
             <label for="dot_gap">Dot Gap</label>
-            <div class="input-wrapper"><input type="number" id="dot_gap" min="0" max="256" step="1" value="1" onchange="updatePreview()"></div>
+            <div class="input-wrapper" data-units="px"><input type="number" id="dot_gap" min="0" max="256" step="1" value="1" onchange="updatePreview()"></div>
         </div>
         <div class="color-picker">
             <label for="export_color">Color<input type="color" id="export_color" value="#ffffff" onchange="updatePreview()"></label>
@@ -159,14 +175,49 @@
     </div>
       <!-- Icons from: https://www.svgrepo.com/collection/lucide-line-icons -->
 </div>
+<div class="bg-image-controls">
+    <div class="number-picker">
+        <label for="bg_opacity">Opacity</label>
+        <div class="input-wrapper" data-units="%"><input type="number" id="bg_opacity" min="0" max="100" step="1" value="20" onchange="updateBackgroundImage()"></div>
+    </div>
+    <div class="number-picker">
+        <label for="int_scalar">Scale</label>
+        <div class="input-wrapper" data-units="1:"><input type="number" id="int_scalar" min="1" step="1" value="3" onchange="updateIntScalar(this.value)"></div>
+    </div>
+    <div class="number-picker">
+        <label for="bg_offset_x">X</label>
+        <div class="input-wrapper" data-units="px"><input type="number" id="bg_offset_x" step="1" value="0" onchange="updateBackgroundImage()"></div>
+    </div>
+    <div class="number-picker">
+        <label for="bg_offset_y">Y</label>
+        <div class="input-wrapper" data-units="px"><input type="number" id="bg_offset_y" step="1" value="0" onchange="updateBackgroundImage()"></div>
+    </div>
+    <button class="icon" title="Clear background" onclick="clearBackground()"><svg 
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M21 11v8a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h8" />
+        <path d="M8.5 10a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+        <path d="M21 15l-5-5L5 21" />
+        <path d="M22 5h-6" />
+    </svg></button>
+</div>
 <div class="canvas-container">
     <div>
-        <div class="bg-image"></div>
+        <div class="bg-image"><canvas id="bg_image" width="0" height="0"></canvas></div>
         <div class="canvas" id="app_canvas"></div>
     </div>
 </div>
 <div class="preview-container">
     <canvas id="preview" width="0" height="0"></canvas>
+    <div class="status" id="preview_status"></div>
 </div>
 <div class="status-bar">
     <div id="status"></div>
