@@ -24,15 +24,15 @@
             "sizes": "512x512"
         }
     ],
-    "id": "/dots-draw",
-    "start_url": "/dots-draw",
+    "id": "/dots-draw/",
+    "start_url": "/dots-draw/",
     "background_color": "#1b1b26",
     "display": "standalone",
-    "scope": "/",
+    "scope": "/dots-draw/",
     "theme_color": "#383845",
     "file_handlers": [
         {
-            "action": "/dots-draw",
+            "action": "/dots-draw/",
             "accept": {
                 "text/csv": [
                     ".dots"
