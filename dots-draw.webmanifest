@@ -4,9 +4,9 @@
     "description": "Draw dot grids",
     "icons": [
         {
-            "src": "/dots-draw/res/dots-draw-icon-96.png",
+            "src": "/dots-draw/res/dots-draw-icon-32.png",
             "type": "image/png",
-            "sizes": "96x96"
+            "sizes": "32x32"
         },
         {
             "src": "/dots-draw/res/dots-draw-icon-128.png",

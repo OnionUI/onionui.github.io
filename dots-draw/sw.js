@@ -4,7 +4,7 @@ const cache_content = [
     "/dots-draw/index.html",
     "/dots-draw/app.js",
     "/dots-draw/style.css",
-    "/dots-draw/res/dots-draw-icon-96.png",
+    "/dots-draw/res/dots-draw-icon-32.png",
     "/dots-draw/res/dots-draw-icon-128.png",
     "/dots-draw/res/dots-draw-icon-256.png",
     "/dots-draw/res/dots-draw-icon-512.png"
