@@ -453,10 +453,27 @@ window.onload = () => {
     canvas_setState(current_state);
     canvas_addState(current_state);
 
-    updateActiveFilename(session_filename);
-
     initNumberPickers();
+
+    setTimeout(() => {
+        updateActiveFilename(session_filename);
+    }, 150)
 };
+
+
+if ('launchQueue' in window && 'files' in LaunchParams.prototype) {
+    launchQueue.setConsumer(async launchParams => {
+        if (!launchParams.files.length)
+            return;
+
+        const [fileHandle] = launchParams.files;
+
+        const file = await fileHandle.getFile();
+        const state = await file.text();
+        loadState(state);
+        updateActiveFilename(fileHandle.name);
+    });
+}
 
 
 function isTextInput(target) {
