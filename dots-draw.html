@@ -464,15 +464,9 @@ window.onload = () => {
             if (!launchParams.files.length)
                 return;
 
-            const [fileHandle] = launchParams.files;
-
-            console.log(fileHandle);
-
+            const [ fileHandle ] = launchParams.files;
             const file = await fileHandle.getFile();
-            console.log(file);
-
             const state = await file.text();
-            console.log(state);
             
             loadState(state);
             updateActiveFilename(fileHandle.name);
