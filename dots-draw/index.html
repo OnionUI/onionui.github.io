@@ -145,17 +145,22 @@
         </svg></button>
     </div>
     <div class="right-side">
-        <div class="number-picker">
-            <label for="dot_size">Dot Size</label>
-            <div class="input-wrapper" data-units="px"><input type="number" id="dot_size" min="1" max="256" step="1" value="3" onchange="updatePreview()"></div>
-        </div>
-        <div class="number-picker">
-            <label for="dot_gap">Dot Gap</label>
-            <div class="input-wrapper" data-units="px"><input type="number" id="dot_gap" min="0" max="256" step="1" value="1" onchange="updatePreview()"></div>
-        </div>
-        <div class="color-picker">
-            <label for="export_color">Color<input type="color" id="export_color" value="#ffffff" onchange="updatePreview()"></label>
-        </div>
+        <button class="icon export-settings-toggle" title="Export settings" onclick="document.body.classList.toggle('show-export-settings')"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M20 7h-9" />
+            <path d="M14 17H5" />
+            <circle cx="17" cy="17" r="3" />
+            <circle cx="7" cy="7" r="3" />
+        </svg></button>
         <div class="separator"></div>
         <button class="icon" title="Export image... (Ctrl+E)" onclick="exportImage()"><svg 
             xmlns="http://www.w3.org/2000/svg"
@@ -175,23 +180,7 @@
     </div>
       <!-- Icons from: https://www.svgrepo.com/collection/lucide-line-icons -->
 </div>
-<div class="bg-image-controls">
-    <div class="number-picker">
-        <label for="bg_opacity">Opacity</label>
-        <div class="input-wrapper" data-units="%"><input type="number" id="bg_opacity" min="0" max="100" step="1" value="20" onchange="updateBackgroundImage()"></div>
-    </div>
-    <div class="number-picker">
-        <label for="int_scalar">Scale</label>
-        <div class="input-wrapper" data-units="1:"><input type="number" id="int_scalar" min="1" step="1" value="3" onchange="updateIntScalar(this.value)"></div>
-    </div>
-    <div class="number-picker">
-        <label for="bg_offset_x">X</label>
-        <div class="input-wrapper" data-units="px"><input type="number" id="bg_offset_x" step="1" value="0" onchange="updateBackgroundImage()"></div>
-    </div>
-    <div class="number-picker">
-        <label for="bg_offset_y">Y</label>
-        <div class="input-wrapper" data-units="px"><input type="number" id="bg_offset_y" step="1" value="0" onchange="updateBackgroundImage()"></div>
-    </div>
+<div class="extra-controls bg-image-controls">
     <button class="icon" title="Clear background" onclick="clearBackground()"><svg 
         xmlns="http://www.w3.org/2000/svg"
         width="24"
@@ -208,6 +197,56 @@
         <path d="M21 15l-5-5L5 21" />
         <path d="M22 5h-6" />
     </svg></button>
+    <div class="number-picker">
+        <label for="bg_opacity">Opacity</label>
+        <div class="input-wrapper" data-units="%"><input type="number" id="bg_opacity" min="0" max="100" step="1" value="20" onchange="updateBackgroundImage()"></div>
+    </div>
+    <div class="number-picker">
+        <label for="int_scalar">Scale</label>
+        <div class="input-wrapper" data-units="1:"><input type="number" id="int_scalar" min="1" step="1" value="3" onchange="updateIntScalar(this.value)"></div>
+    </div>
+    <div class="number-picker">
+        <label for="bg_offset_x">X</label>
+        <div class="input-wrapper" data-units="px"><input type="number" id="bg_offset_x" step="1" value="0" onchange="updateBackgroundImage()"></div>
+    </div>
+    <div class="number-picker">
+        <label for="bg_offset_y">Y</label>
+        <div class="input-wrapper" data-units="px"><input type="number" id="bg_offset_y" step="1" value="0" onchange="updateBackgroundImage()"></div>
+    </div>
+    <button disabled class="icon" title="Auto fill" onclick="runAutoFill()"><svg 
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M15 4V2" />
+        <path d="M15 16v-2" />
+        <path d="M8 9h2" />
+        <path d="M20 9h2" />
+        <path d="M17.8 11.8L19 13" />
+        <path d="M15 9h0" />
+        <path d="M17.8 6.2L19 5" />
+        <path d="M3 21l9-9" />
+        <path d="M12.2 6.2L11 5" />
+    </svg></button>
+</div>
+<div class="extra-controls preview-settings">
+    <div class="number-picker">
+        <label for="dot_size">Dot Size</label>
+        <div class="input-wrapper" data-units="px"><input type="number" id="dot_size" min="1" max="256" step="1" value="3" onchange="updatePreview()"></div>
+    </div>
+    <div class="number-picker">
+        <label for="dot_gap">Dot Gap</label>
+        <div class="input-wrapper" data-units="px"><input type="number" id="dot_gap" min="0" max="256" step="1" value="0" onchange="updatePreview()"></div>
+    </div>
+    <div class="color-picker">
+        <label for="export_color">Color<input type="color" id="export_color" value="#ffffff" onchange="updatePreview()"></label>
+    </div>
 </div>
 <div class="canvas-container">
     <div>

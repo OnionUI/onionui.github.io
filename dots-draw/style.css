@@ -88,7 +88,8 @@ button:hover,
 button:active,
 .color-picker:active,
 .color-picker:focus-within,
-button.active {
+button.active,
+.show-export-settings button.export-settings-toggle {
     background-color: rgba(27, 27, 38, .5);
     color: rgba(255, 255, 255, .75);
 }
@@ -98,7 +99,7 @@ button:disabled {
     pointer-events: none;
 }
 
-.bg-image-controls {
+.extra-controls {
     display: none;
     white-space: nowrap;
     position: fixed;
@@ -110,9 +111,16 @@ button:disabled {
     padding: 4px;
     align-items: center;
     border-radius: 4px;
+    z-index: 999;
 }
 
-.has-bg-image .bg-image-controls {
+.extra-controls.preview-settings {
+    left: auto;
+    right: 10px;
+}
+
+.has-bg-image .bg-image-controls,
+.show-export-settings .preview-settings {
     display: flex;
 }
 
@@ -223,10 +231,6 @@ input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
-}
-
-input[type=number] {
-    -moz-appearance: textfield;
 }
 
 .number-picker button {
@@ -344,6 +348,10 @@ input[type=number] {
     top: 70px;
     right: 10px;
     text-align: right;
+}
+
+.show-export-settings .preview-container {
+    top: 130px;
 }
 
 .preview-container canvas {

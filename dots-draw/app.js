@@ -100,7 +100,7 @@ window.onload = () => {
 
     document.getElementById("export_color").value = localStorage.getItem("export-color") || "#ffffff";
     document.getElementById("dot_size").value = localStorage.getItem("dot-size") || "3";
-    document.getElementById("dot_gap").value = localStorage.getItem("dot-gap") || "1";
+    document.getElementById("dot_gap").value = localStorage.getItem("dot-gap") || "0";
 
     document.getElementById("bg_opacity").value = sessionStorage.getItem("bg-opacity") || "20";
     document.getElementById("int_scalar").value = sessionStorage.getItem("int-scalar") || "1";
@@ -323,8 +323,6 @@ function loadBackgroundImage(data_uri, cache) {
         clearBackground();
         return;
     }
-
-    console.log(data_uri);
 
     const bg_image = document.getElementById("bg_image");
     const ctx = bg_image.getContext("2d");
