@@ -468,8 +468,14 @@ if ('launchQueue' in window && 'files' in LaunchParams.prototype) {
 
         const [fileHandle] = launchParams.files;
 
+        console.log(fileHandle);
+
         const file = await fileHandle.getFile();
+        console.log(file);
+
         const state = await file.text();
+        console.log(state);
+        
         loadState(state);
         updateActiveFilename(fileHandle.name);
     });
