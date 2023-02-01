@@ -2,7 +2,14 @@
 <html>
 <head>
 <title>Dots-draw</title>
+<meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#383845">
+<link rel="manifest" href="dots-draw.webmanifest">
 <style>
+:root {
+    --canvas-width: 32;
+    --canvas-height: 32;
+}
+
 body {
     background-color: #1b1b26;
     color: rgba(172, 176, 208, 1);
@@ -227,9 +234,27 @@ input[type=number] {
     justify-content: center;
 }
 
+.canvas-container > div {
+    position: relative;
+    width: calc(80vh * (var(--canvas-width) / var(--canvas-height)));
+    height: calc(80vh);
+}
+
+.canvas-container > div > div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.canvas-container .bg-image svg {
+    width: 100%;
+    height: 100%;
+    stroke: rgba(120, 124, 153, 1);
+}
+
 .canvas {
-    --canvas-width: 32;
-    --canvas-height: 32;
     width: calc(80vh * (var(--canvas-width) / var(--canvas-height)));
     height: calc(80vh);
     border: 1px solid rgba(120, 124, 153, .25);
@@ -998,8 +1023,32 @@ function boxSelection(src_el, dest_el) {
     </div>
       <!-- Icons from: https://www.svgrepo.com/collection/lucide-line-icons -->
 </div>
-<div class="canvas-container"><div class="canvas" id="app_canvas"></div></div>
-<div class="preview-container"><canvas id="preview" width="0" height="0"></canvas></canvas></div>
-<div class="status-bar"><div id="status"></div></div>
+<div class="canvas-container">
+    <div>
+        <div class="bg-image"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M12 19l7-7 3 3-7 7-3-3z" />
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+            <path d="M2 2l7.586 7.586" />
+            <circle cx="11" cy="11" r="2" />
+        </svg></div>
+        <div class="canvas" id="app_canvas"></div>
+    </div>
+</div>
+<div class="preview-container">
+    <canvas id="preview" width="0" height="0"></canvas>
+</div>
+<div class="status-bar">
+    <div id="status"></div>
+</div>
 </body>
 </html>
