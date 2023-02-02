@@ -299,6 +299,22 @@ input[type=number]::-webkit-outer-spin-button {
     margin-top: calc(var(--dot-size) * var(--offset-y) / var(--int-scalar) + 1px);
 }
 
+.icon-eye {
+    display: none;
+}
+
+.hide-bg-image .icon-eye-off {
+    display: none;
+}
+
+.hide-bg-image .icon-eye {
+    display: flex;
+}
+
+.hide-bg-image .canvas-container .bg-image {
+    display: none;
+}
+
 .canvas {
     width: var(--container-width);
     height: var(--container-height);

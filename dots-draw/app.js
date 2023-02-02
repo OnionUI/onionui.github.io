@@ -574,7 +574,7 @@ function history_updateButtons() {
     const button_redo = document.getElementById("button_redo");
     button_undo.disabled = !history_undo(true);
     button_redo.disabled = !history_redo(true);
-    save_button.disabled = undo_history.length <= 1;
+    save_button.disabled = undo_history.length <= 1 || current_file_handle == null;
 }
 
 
