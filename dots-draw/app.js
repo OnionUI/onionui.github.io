@@ -4,6 +4,7 @@ let canvas_content = [];
 
 let draw_active = false;
 let draw_start_element = null;
+let state_before_selection = null;
 
 const PEN_TOOL = 0,
       SELECT_TOOL = 1;
@@ -65,13 +66,33 @@ window.onload = () => {
             event.preventDefault();
             switchTool(SELECT_TOOL);
         }
-        else if (tool_active == SELECT_TOOL && event.key == 'Escape') {
-            event.preventDefault();
-            switchTool(SELECT_TOOL);
-        }
-        else if (tool_active == SELECT_TOOL && event.key == 'Delete') {
-            event.preventDefault();
-            deleteSelection();
+
+        if (tool_active == SELECT_TOOL && hasSelection() && !isTextInput(event.target)) {
+            if (event.key == 'Escape') {
+                event.preventDefault();
+                switchTool(PEN_TOOL);
+            }
+            else if (event.key == 'Delete') {
+                event.preventDefault();
+                deleteSelection();
+                switchTool(PEN_TOOL);
+            }
+            else if (event.key == 'ArrowRight') {
+                event.preventDefault();
+                stepMoveSelection(1, 0);
+            }
+            else if (event.key == 'ArrowLeft') {
+                event.preventDefault();
+                stepMoveSelection(-1, 0);
+            }
+            else if (event.key == 'ArrowDown') {
+                event.preventDefault();
+                stepMoveSelection(0, 1);
+            }
+            else if (event.key == 'ArrowUp') {
+                event.preventDefault();
+                stepMoveSelection(0, -1);
+            }
         }
     })
 
@@ -81,16 +102,18 @@ window.onload = () => {
         canvas_addState();
     })
 
+    const drop_area = document.getElementById("drop_area");
+
     ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         document.body.addEventListener(eventName, preventDefaults, false);
     })
 
     ;['dragenter', 'dragover'].forEach(eventName => {
-        document.body.addEventListener(eventName, dropArea_highlight, false);
+        document.body.addEventListener(eventName, dropArea_active, false);
     })
 
     ;['dragleave', 'drop'].forEach(eventName => {
-        document.body.addEventListener(eventName, dropArea_unhighlight, false);
+        drop_area.addEventListener(eventName, dropArea_inactive, false);
     })
 
     document.body.addEventListener('drop', openDroppedFile, false)
@@ -149,11 +172,11 @@ function preventDefaults(event) {
     event.stopPropagation()
 }
 
-function dropArea_highlight() {
+function dropArea_active() {
     document.body.classList.add('drop-area-highlight');
 }
 
-function dropArea_unhighlight() {
+function dropArea_inactive() {
     document.body.classList.remove('drop-area-highlight');
 }
 
@@ -207,12 +230,18 @@ function clearCanvas() {
                         dot_el.classList.toggle("active", draw_type == 0);
                         break;
                     case SELECT_TOOL:
+                        if (draw_type == 0 && dot_el.classList.contains("selected")) {
+                            moveSelection(event, dot_el);
+                            draw_active = false;
+                            break;
+                        }
+                        state_before_selection = getStateBeforeSelection();
                         dot_el.classList.toggle("selected", draw_type == 0);
                         break;
                 }
             })
 
-            dot_el.addEventListener("pointermove", event => {
+            dot_el.addEventListener("mousemove", event => {
                 if (!draw_active) return;
                 if (event.pressure == 0) {
                     draw_active = false;
@@ -268,14 +297,22 @@ async function openFile() {
 
 function openDroppedFile(event) {
     let [file, ...rest] = event.dataTransfer.files;
+    const last_dot = file.name.lastIndexOf('.');
+    const ext = last_dot > 0 ? file.name.substr(last_dot).toLowerCase() : "";
     
-    const reader = new FileReader();
-    reader.onload = event => {
-        const state = event.target.result;
-        loadState(state);
-        updateActiveFilename(file.name);
+    if (ext == ".dots") {
+        const reader = new FileReader();
+        reader.onload = event => {
+            const state = event.target.result;
+            loadState(state);
+            updateActiveFilename(file.name);
+        }
+        reader.readAsText(file);
     }
-    reader.readAsText(file);
+    else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".gif") {
+        const data_uri = URL.createObjectURL(file);
+        loadBackgroundImage(data_uri, true);
+    }
 }
 
 async function saveFile() {
@@ -387,6 +424,11 @@ function clearBackground() {
     const ctx = bg_image.getContext("2d");
     ctx.clearRect(0, 0, bg_image.width, bg_image.height);
     document.body.classList.remove("has-bg-image");
+    backgroundImage = null;
+    sessionStorage.removeItem("bg-image-uri");
+    sessionStorage.removeItem("int-scalar");
+    sessionStorage.removeItem("bg-offset-x");
+    sessionStorage.removeItem("bg-offset-y");
 }
 
 
@@ -409,12 +451,20 @@ function canvas_updateState() {
     canvas_setState(state);
     updatePreview(state);
     history_updateButtons();
+    removeSelection();
 }
 
 function canvas_getState() {
     let s = `${canvas_width}:${canvas_height}:`;
     for (dot_el of canvas.children)
         s += dot_el.classList.contains("active") ? '1' : '0';
+    return s;
+}
+
+function canvas_getSelectedState() {
+    let s = `${canvas_width}:${canvas_height}:`;
+    for (dot_el of canvas.children)
+        s += dot_el.classList.contains("selected") ? dot_el.classList.contains("active") ? '1' : '0' : '2';
     return s;
 }
 
@@ -431,8 +481,7 @@ function canvas_setState(state) {
     }
 
     for (let i = 0; i < canvas.children.length; i++)
-        if (i < canvas.children.length)
-            canvas.children[i].classList.toggle("active", i < b.length ? b[i] == '1' : false);
+        canvas.children[i].classList.toggle("active", i < b.length ? b[i] == '1' : false);
 
     sessionStorage.setItem("current_state", state);
 }
@@ -605,6 +654,11 @@ function switchTool(tool) {
 }
 
 
+function hasSelection() {
+    return document.querySelectorAll(".dot-item.selected").length != 0;
+}
+
+
 function removeSelection() {
     const selected_dots = document.querySelectorAll(".dot-item.selected");
 
@@ -637,4 +691,95 @@ function boxSelection(src_el, dest_el) {
             canvas.children[y * canvas_width + x].classList.toggle("selected", draw_type == 0);
         }
     }
+    
+    state_before_selection = getStateBeforeSelection();
+}
+
+function getStateBeforeSelection() {
+    return removeSelectionFromState(canvas_getState(), canvas_getSelectedState());
+}
+
+function removeSelectionFromState(state, selected_state) {
+    const [w, h, dst] = state.split(":");
+    const [, , src] = selected_state.split(":");
+
+    if (dst.length != src.length)
+        return state;
+
+    let merge = "";
+
+    for (let i = 0; i < dst.length; i++) {
+        merge += src[i] != '2' ? '0' : dst[i];
+    }
+
+    return `${w}:${h}:${merge}`;
+}
+
+function moveSelection(event, dot_el) {
+    const { x: start_x, y: start_y } = event;
+    const selected_state = canvas_getSelectedState();
+    const { clientWidth: dot_w, clientHeight: dot_h } = dot_el;
+    const state = state_before_selection;
+
+    const move_func = move_event => {
+        const { x, y } = move_event;
+        const [ move_x, move_y ] = [
+            Math.round((x - start_x) / dot_w),
+            Math.round((y - start_y) / dot_h)
+        ];
+        
+        applyMove(state, selected_state, move_x, move_y);
+    };
+    
+    dot_el.classList.add("drag-active");
+    dot_el.setPointerCapture(event.pointerId);
+    dot_el.addEventListener("pointermove", move_func)
+    dot_el.addEventListener("pointerup", () => {
+        canvas_addState();
+        dot_el.classList.remove("drag-active");
+        dot_el.removeEventListener("pointermove", move_func);
+    })
+}
+
+function stepMoveSelection(move_x, move_y) {
+    const state = state_before_selection;
+    const selected_state = canvas_getSelectedState();
+    applyMove(state, selected_state, move_x, move_y);
+}
+
+function applyMove(state, selected_state, move_x, move_y) {
+    if (!state)
+        state = `${canvas_width}:${canvas_height}:`;
+
+    const [w, h, dst] = state.split(":");
+    const [, , src] = selected_state.split(":");
+
+    if (canvas_width != w || canvas_height != h)
+        return;
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const i = y * w + x;
+            const current = dst[i];
+
+            const pos_x = x - move_x;
+            const pos_y = y - move_y;
+
+            let selected = '2';
+
+            if (pos_x >= 0 && pos_x < w && pos_y >= 0 && pos_y < h)
+                selected = src[pos_y * w + pos_x];
+
+            if (selected == '2') {
+                canvas.children[i].classList.toggle("active", current == '1');
+                canvas.children[i].classList.remove("selected");
+            }
+            else {
+                canvas.children[i].classList.toggle("active", selected == '1');
+                canvas.children[i].classList.add("selected");
+            }
+        }
+    }
+
+    sessionStorage.setItem("current_state", state);
 }
