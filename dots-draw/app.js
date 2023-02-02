@@ -193,8 +193,19 @@ function dropArea_inactive() {
 
 
 function newFile(skip_confirm) {
-    if (!skip_confirm && !confirm('Create new canvas?'))
-        return;
+    if (!skip_confirm) {
+        const w = prompt('Create new canvas? Width:', canvas_width);
+        
+        if (w == null)
+            return;
+
+        const h = prompt('Height:', w);
+        
+        if (h == null)
+            return;
+
+        setCanvasDimensions(w, h);
+    }
 
     current_file_handle = null;
     save_button.disabled = true;
@@ -205,8 +216,16 @@ function newFile(skip_confirm) {
 }
 
 
+function setCanvasDimensions(w, h) {
+    canvas_width = w;
+    canvas_height = h;
+    document.body.style.setProperty("--canvas-width", w);
+    document.body.style.setProperty("--canvas-height", h);
+}
+
+
 function resetUndoHistory() {
-    undo_history = [canvas_getState()];
+    undo_history = [];
     undo_reverse_index = 0;
     history_updateButtons();
 }
@@ -408,6 +427,9 @@ function loadBackgroundImage(data_uri, cache) {
 
         if (cache) {
             let int_scalar = Math.floor(img.height / canvas_height);
+            
+            if (int_scalar <= 0) int_scalar = 1;
+
             document.getElementById("int_scalar").value = int_scalar;
             updateIntScalar(int_scalar);
 
@@ -506,8 +528,7 @@ function canvas_setState(state) {
     const [ w, h, b ] = state.split(":");
 
     if (canvas_width != w || canvas_height != h) {
-        canvas_width = w;
-        canvas_height = h;
+        setCanvasDimensions(w, h);
         clearCanvas();
     }
 
