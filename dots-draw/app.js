@@ -19,6 +19,7 @@ let undo_history = [];
 let undo_reverse_index = 0;
 
 let current_filename = "";
+let current_file_handle = null;
 
 
 const DEFAULT_FILENAME = "Untitled.dots";
@@ -96,6 +97,13 @@ window.onload = () => {
         }
     })
 
+    window.onbeforeunload = () => {
+        if (undo_history.length <= 1)
+            return;
+
+        return false;
+    };
+
     document.body.addEventListener("pointerup", event => {
         if (!draw_active) return;
         draw_active = false;
@@ -148,6 +156,9 @@ window.onload = () => {
                 return;
 
             const [ fileHandle ] = launchParams.files;
+            current_file_handle = fileHandle;
+            save_button.disabled = false;
+
             const file = await fileHandle.getFile();
             const state = await file.text();
             
@@ -185,15 +196,17 @@ function newFile(skip_confirm) {
     if (!skip_confirm && !confirm('Create new canvas?'))
         return;
 
+    current_file_handle = null;
+    save_button.disabled = true;
     updateActiveFilename(DEFAULT_FILENAME);
-    resetUndoHistory();
     clearCanvas();
+    resetUndoHistory();
     canvas_addState();
 }
 
 
 function resetUndoHistory() {
-    undo_history = [];
+    undo_history = [canvas_getState()];
     undo_reverse_index = 0;
     history_updateButtons();
 }
@@ -272,8 +285,8 @@ function clearCanvas() {
 
 function loadState(state) {
     clearCanvas();
-    resetUndoHistory();
     canvas_setState(state);
+    resetUndoHistory();
     canvas_addState(state);
 }
 
@@ -288,6 +301,9 @@ async function openFile() {
 
     if (!fileHandle)
         return;
+
+    current_file_handle = fileHandle;
+    save_button.disabled = false;
 
     const file = await fileHandle.getFile();
     const state = await file.text();
@@ -315,7 +331,7 @@ function openDroppedFile(event) {
     }
 }
 
-async function saveFile() {
+async function saveAs() {
     const fileHandle = await window.showSaveFilePicker({
         suggestedName: current_filename,
         types: [{
@@ -331,7 +347,22 @@ async function saveFile() {
     await fileStream.write(new Blob([canvas_getState()], {type: "text/plain"}));
     await fileStream.close();
 
+    resetUndoHistory();
+
     updateActiveFilename(fileHandle.name);
+}
+
+async function saveFile() {
+    if (!current_file_handle) {
+        saveAs();
+        return;
+    }
+    
+    const fileStream = await current_file_handle.createWritable();
+    await fileStream.write(new Blob([canvas_getState()], {type: "text/plain"}));
+    await fileStream.close();
+
+    resetUndoHistory();
 }
 
 
@@ -528,6 +559,7 @@ function history_updateButtons() {
     const button_redo = document.getElementById("button_redo");
     button_undo.disabled = !history_undo(true);
     button_redo.disabled = !history_redo(true);
+    save_button.disabled = undo_history.length <= 1;
 }
 
 
