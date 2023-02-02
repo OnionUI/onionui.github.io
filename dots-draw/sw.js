@@ -1,4 +1,4 @@
-const cache_name = "dots-draw-v1.3";
+const cache_name = "dots-draw-v1.3.1";
 const cache_content = [
     "/dots-draw/",
     "/dots-draw/index.html",
@@ -13,24 +13,24 @@ const cache_content = [
 self.addEventListener('install', function (event) {
     var now = Date.now();
 
-    console.log('Handling install event. Resources to prefetch:', urlsToPrefetch);
+    console.log('Handling install event. Resources to prefetch:', cache_content);
 
     event.waitUntil(
         caches.open(cache_name).then(async function (cache) {
-            var cachePromises = urlsToPrefetch.map(async function (cache_content) {
-                var url = new URL(cache_content, location.href);
+            var cachePromises = cache_content.map(async function (content) {
+                var url = new URL(content, location.href);
                 url.search += (url.search ? '&' : '?') + 'cache-bust=' + now;
 
                 var request = new Request(url, { mode: 'no-cors' });
                 try {
                     const response = await fetch(request);
                     if (response.status >= 400) {
-                        throw new Error('request for ' + cache_content +
+                        throw new Error('request for ' + content +
                             ' failed with status ' + response.statusText);
                     }
-                    return await cache.put(cache_content, response);
+                    return await cache.put(content, response);
                 } catch (error) {
-                    console.error('Not caching ' + cache_content + ' due to ' + error);
+                    console.error('Not caching ' + content + ' due to ' + error);
                 }
             });
 

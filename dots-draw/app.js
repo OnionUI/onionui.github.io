@@ -211,10 +211,10 @@ function newFile(skip_confirm) {
 
 
 function setCanvasDimensions(w, h) {
-    canvas_width = w;
-    canvas_height = h;
-    document.body.style.setProperty("--canvas-width", w);
-    document.body.style.setProperty("--canvas-height", h);
+    canvas_width = parseInt(w);
+    canvas_height = parseInt(h);
+    document.body.style.setProperty("--canvas-width", canvas_width);
+    document.body.style.setProperty("--canvas-height", canvas_height);
 }
 
 
