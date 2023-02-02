@@ -195,15 +195,9 @@ function dropArea_inactive() {
 function newFile(skip_confirm) {
     if (!skip_confirm) {
         const w = prompt('Create new canvas? Width:', canvas_width);
-        
-        if (w == null)
-            return;
-
+        if (w == null) return;
         const h = prompt('Height:', w);
-        
-        if (h == null)
-            return;
-
+        if (h == null) return;
         setCanvasDimensions(w, h);
     }
 
