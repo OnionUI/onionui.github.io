@@ -325,6 +325,14 @@
 </div>
 <div class="extra-controls preview-settings">
     <div class="number-picker">
+        <label for="preview_offset_x">X</label>
+        <div class="input-wrapper" data-units="px"><input type="number" id="preview_offset_x" step="1" value="0" onchange="updatePreview()"></div>
+    </div>
+    <div class="number-picker">
+        <label for="preview_offset_y">Y</label>
+        <div class="input-wrapper" data-units="px"><input type="number" id="preview_offset_y" step="1" value="0" onchange="updatePreview()"></div>
+    </div>
+    <div class="number-picker">
         <label for="dot_size">Dot Size</label>
         <div class="input-wrapper" data-units="px"><input type="number" id="dot_size" min="1" max="256" step="1" value="3" onchange="updatePreview()"></div>
     </div>
@@ -343,7 +351,9 @@
     </div>
 </div>
 <div class="preview-container">
-    <canvas id="preview" width="0" height="0"></canvas>
+    <div class="preview-canvas">
+        <canvas id="preview" width="0" height="0"></canvas>
+    </div>
     <div class="status" id="preview_status"></div>
 </div>
 <div class="status-bar">

@@ -480,10 +480,23 @@ input[type=number]::-webkit-outer-spin-button {
     top: 130px;
 }
 
+.preview-container .preview-canvas {
+    --preview-outer-width: 128;
+    --preview-outer-height: 128;
+    width: calc(var(--preview-outer-width) * 1px);
+    height: calc(var(--preview-outer-height) * 1px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(27, 27, 38, 1);
+    border: 1px solid rgba(120, 124, 153, .25);
+    border-radius: 4px;
+}
+
 .preview-container canvas {
     display: block;
-    border: 1px solid rgba(120, 124, 153, .25);
-    background-color: rgba(27, 27, 38, 1);
+    border: 1px solid rgba(27, 27, 38, 1);
+    outline: 1px dotted rgba(120, 124, 153, .25);
 }
 
 .preview-container .status {

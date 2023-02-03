@@ -137,6 +137,8 @@ window.onload = () => {
     document.getElementById("export_color").value = localStorage.getItem("export-color") || "#ffffff";
     document.getElementById("dot_size").value = localStorage.getItem("dot-size") || "3";
     document.getElementById("dot_gap").value = localStorage.getItem("dot-gap") || "0";
+    document.getElementById("preview_offset_x").value = localStorage.getItem("preview-offset-x") || "0";
+    document.getElementById("preview_offset_y").value = localStorage.getItem("preview-offset-y") || "0";
 
     document.getElementById("bg_opacity").value = sessionStorage.getItem("bg-opacity") || "20";
     document.getElementById("int_scalar").value = sessionStorage.getItem("int-scalar") || "1";
@@ -610,6 +612,8 @@ function updatePreview(state) {
     const export_color = document.getElementById("export_color").value;
     const dot_size = parseInt(document.getElementById("dot_size").value);
     const dot_gap = parseInt(document.getElementById("dot_gap").value);
+    const offset_x = parseInt(document.getElementById("preview_offset_x").value);
+    const offset_y = parseInt(document.getElementById("preview_offset_y").value);
 
     if (!state)
         state = history_currentState();
@@ -620,8 +624,16 @@ function updatePreview(state) {
     const [ w, h, b ] = state.split(":");
     const total_size = dot_size + dot_gap;
 
-    preview.width = w * total_size;
-    preview.height = h * total_size;
+    preview.parentElement.style.setProperty("--preview-outer-width", w * total_size + 48);
+    preview.parentElement.style.setProperty("--preview-outer-height", h * total_size + 48);
+
+    preview.width = w * total_size + Math.abs(offset_x) * 2;
+    preview.height = h * total_size + Math.abs(offset_y) * 2;
+
+    let [sx, sy] = [0, 0];
+
+    if (offset_x > 0) sx = offset_x * 2;
+    if (offset_y > 0) sy = offset_y * 2;
 
     const ctx = preview.getContext("2d");
 
@@ -632,13 +644,15 @@ function updatePreview(state) {
 
             ctx.beginPath();
             ctx.fillStyle = export_color;
-            ctx.fillRect(x * total_size, y * total_size, dot_size, dot_size);
+            ctx.fillRect(x * total_size + sx, y * total_size + sy, dot_size, dot_size);
         }
     }
 
     localStorage.setItem("export-color", export_color);
     localStorage.setItem("dot-size", dot_size);
     localStorage.setItem("dot-gap", dot_gap);
+    localStorage.setItem("preview-offset-x", offset_x);
+    localStorage.setItem("preview-offset-y", offset_y);
 
     document.getElementById("preview_status").innerHTML = `${preview.width} &times; ${preview.height}`;
 }
