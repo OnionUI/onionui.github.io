@@ -15,11 +15,16 @@ let tool_active = PEN_TOOL;
  */
 let canvas = null;
 
+let bg_image = null;
+let bg_image_ctx = null;
+
 let undo_history = [];
 let undo_reverse_index = 0;
 
 let current_filename = "";
 let current_file_handle = null;
+
+let bg_image_cache = null;
 
 
 const DEFAULT_FILENAME = "Untitled.dots";
@@ -137,6 +142,10 @@ window.onload = () => {
     document.getElementById("int_scalar").value = sessionStorage.getItem("int-scalar") || "1";
     document.getElementById("bg_offset_x").value = sessionStorage.getItem("bg-offset-x") || "0";
     document.getElementById("bg_offset_y").value = sessionStorage.getItem("bg-offset-y") || "0";
+
+    document.body.classList.toggle("autofill-mode-light", sessionStorage.getItem("autofill-mode-light") == "true");
+    document.getElementById("autofill_cutoff").value = sessionStorage.getItem("autofill-cutoff") || "5";
+    document.getElementById("autofill_cutoff").oninput();
 
     loadBackgroundImage(sessionStorage.getItem("bg-image-uri"), false);
     
@@ -405,29 +414,39 @@ function loadBackgroundImage(data_uri, cache) {
         return;
     }
 
-    const bg_image = document.getElementById("bg_image");
-    const ctx = bg_image.getContext("2d");
+    bg_image = document.getElementById("bg_image");
+    bg_image_ctx = bg_image.getContext("2d", {willReadFrequently: true});
+
     const img = document.createElement("img");
 
     img.onload = () => {
-        bg_image.width = img.width;
-        bg_image.height = img.height;
-        
-        ctx.clearRect(0, 0, bg_image.width, bg_image.height);
-        ctx.drawImage(img, 0, 0);
+        let [w, h] = [img.width, img.height];
 
-        bg_image.style.setProperty("--scale", bg_image.width / canvas_width);
+        bg_image.width = w;
+        bg_image.height = h;
+        
+        bg_image_ctx.clearRect(0, 0, w, h);
+        bg_image_ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, w, h);
+
+        bg_image.style.setProperty("--scale", w / canvas_width);
         document.body.classList.add("has-bg-image");
 
+        bg_image_cache = data_uri;
+
         if (cache) {
-            let int_scalar = Math.floor(img.height / canvas_height);
+            let int_scalar = Math.floor(h / canvas_height);
             
             if (int_scalar <= 0) int_scalar = 1;
 
             document.getElementById("int_scalar").value = int_scalar;
             updateIntScalar(int_scalar);
 
-            sessionStorage.setItem("bg-image-uri", bg_image.toDataURL("image/png"));
+            try {
+                sessionStorage.setItem("bg-image-uri", bg_image.toDataURL("image/png"));
+            }
+            catch (_e) {
+                sessionStorage.removeItem("bg-image-uri");
+            }
         }
         else {
             updateBackgroundImage();
@@ -451,7 +470,6 @@ function updateIntScalar(int_scalar) {
 }
 
 function updateBackgroundImage() {
-    const bg_image = document.getElementById("bg_image");
     const opacity = parseInt(document.getElementById("bg_opacity").value) / 100;
     const int_scalar = parseInt(document.getElementById("int_scalar").value);
     const offset_x = parseInt(document.getElementById("bg_offset_x").value);
@@ -467,9 +485,8 @@ function updateBackgroundImage() {
 }
 
 function clearBackground() {
-    const bg_image = document.getElementById("bg_image");
-    const ctx = bg_image.getContext("2d");
-    ctx.clearRect(0, 0, bg_image.width, bg_image.height);
+    if (bg_image_ctx)
+        bg_image_ctx.clearRect(0, 0, bg_image.width, bg_image.height);
     document.body.classList.remove("has-bg-image");
     backgroundImage = null;
     sessionStorage.removeItem("bg-image-uri");
@@ -510,8 +527,11 @@ function canvas_getState() {
 
 function canvas_getSelectedState() {
     let s = `${canvas_width}:${canvas_height}:`;
-    for (dot_el of canvas.children)
-        s += dot_el.classList.contains("selected") ? dot_el.classList.contains("active") ? '1' : '0' : '2';
+    for (dot_el of canvas.children) {
+        const active = dot_el.classList.contains("active");
+        const selected = dot_el.classList.contains("selected");
+        s += !selected ? (!active ? '0' : '1') : (!active ? '2' : '3');
+    }
     return s;
 }
 
@@ -756,7 +776,7 @@ function removeSelectionFromState(state, selected_state) {
     let merge = "";
 
     for (let i = 0; i < dst.length; i++) {
-        merge += src[i] != '2' ? '0' : dst[i];
+        merge += src[i] == '2' || src[i] == '3' ? '0' : dst[i];
     }
 
     return `${w}:${h}:${merge}`;
@@ -792,12 +812,10 @@ function stepMoveSelection(move_x, move_y) {
     const state = state_before_selection;
     const selected_state = canvas_getSelectedState();
     applyMove(state, selected_state, move_x, move_y);
+    canvas_addState();
 }
 
 function applyMove(state, selected_state, move_x, move_y) {
-    if (!state)
-        state = `${canvas_width}:${canvas_height}:`;
-
     const [w, h, dst] = state.split(":");
     const [, , src] = selected_state.split(":");
 
@@ -812,21 +830,115 @@ function applyMove(state, selected_state, move_x, move_y) {
             const pos_x = x - move_x;
             const pos_y = y - move_y;
 
-            let selected = '2';
+            let selected = current;
 
             if (pos_x >= 0 && pos_x < w && pos_y >= 0 && pos_y < h)
                 selected = src[pos_y * w + pos_x];
 
-            if (selected == '2') {
+            if (selected == '0' || selected == '1') {
                 canvas.children[i].classList.toggle("active", current == '1');
                 canvas.children[i].classList.remove("selected");
             }
             else {
-                canvas.children[i].classList.toggle("active", selected == '1');
+                canvas.children[i].classList.toggle("active", selected == '3');
                 canvas.children[i].classList.add("selected");
             }
         }
     }
 
     sessionStorage.setItem("current_state", state);
+}
+
+
+let auto_fill_dots = [];
+
+function autoFill_showPreview() {
+    if (bg_image_ctx == null)
+        return;
+
+    const int_scalar = parseInt(sessionStorage.getItem("int-scalar"));
+    const offset_x = parseInt(sessionStorage.getItem("bg-offset-x"));
+    const offset_y = parseInt(sessionStorage.getItem("bg-offset-y"));
+    const autofill_mode_light = document.body.classList.contains("autofill-mode-light");
+    const autofill_cutoff = parseInt(document.getElementById("autofill_cutoff").value);
+
+    sessionStorage.setItem("autofill-mode-light", autofill_mode_light);
+    sessionStorage.setItem("autofill-cutoff", autofill_cutoff);
+    autoFill_hidePreview();
+
+    const cutoff = autofill_cutoff / 100;
+
+    const [sx, sy, sw, sh] = [-offset_x, -offset_y, canvas_width * int_scalar, canvas_height * int_scalar];
+    const image_data = bg_image_ctx.getImageData(sx, sy, sw, sh);
+
+    for (let y = 0; y < canvas_height; y++) {
+        for (let x = 0; x < canvas_width; x++) {
+            const [xi, yi] = [x * int_scalar, y * int_scalar];
+            const {average, brightness} = getAverageBrightness(image_data, xi, yi, int_scalar);
+            const alpha = average[3];
+
+            if (alpha < 10 ) continue;
+            if ((autofill_mode_light && brightness < cutoff) || (!autofill_mode_light && brightness > cutoff)) continue;
+
+            const i = y * canvas_width + x;
+    
+            if (canvas.children[i])
+                canvas.children[i].classList.add("autofill-preview");
+        }
+    }
+}
+
+function getAverageBrightness(image_data, x, y, int_scalar) {
+    let avg = new Uint32Array([0, 0, 0, 0]);
+    let count = 0;
+
+    for (let yo = 0; yo < int_scalar; yo++) {
+        for (let xo = 0; xo < int_scalar; xo++) {
+            const c = colorAtCoords(image_data, x + xo, y + yo);
+            avg = [avg[0] + c[0], avg[1] + c[1], avg[2] + c[2], avg[3] + c[3]];
+            count++;
+        }
+    }
+
+    if (count > 1)
+        avg = avg.map(value => value / count);
+
+        
+    let [r, g, b, a] = avg;
+        
+    a /= 255;
+    r *= a;
+    g *= a;
+    b *= a;
+        
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000 / 255;
+        
+    return {average: avg, brightness};
+}
+
+function colorAtCoords(image_data, x, y) {
+    const i = (y * image_data.width + x) * 4;
+    return image_data.data.slice(i, i + 4);
+}
+
+function averageRGB([r1, g1, b1, a1], [r2, g2, b2, a2]) {
+    return [Math.sqrt((r1**2 + r2**2) / 2), Math.sqrt((g1**2 + g2**2) / 2), Math.sqrt((b1**2 + b2**2) / 2), Math.sqrt((a1**2 + a2**2) / 2)];
+}
+
+function autoFill_hidePreview() {
+    const autofill_dots = document.querySelectorAll(".dot-item.autofill-preview");
+
+    for (dot of autofill_dots)
+        dot.classList.remove("autofill-preview");
+}
+
+function autoFill_apply() {
+    const autofill_dots = document.querySelectorAll(".dot-item.autofill-preview");
+
+    for (dot of autofill_dots) {
+        dot.classList.remove("autofill-preview");
+        dot.classList.add("active");
+    }
+
+    canvas_addState();
 }

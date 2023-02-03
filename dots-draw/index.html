@@ -67,9 +67,12 @@
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <path d="M15.5 2H8.6c-.4 0-.8.2-1.1.5-.3.3-.5.7-.5 1.1v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8c.4 0 .8-.2 1.1-.5.3-.3.5-.7.5-1.1V6.5L15.5 2z" />
-            <path d="M3 7.6v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8" />
-            <path d="M15 2v5h5" />
+            <path transform="translate(-2,1)"  d="M3 7.6v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8" />
+            <g transform="translate(1,-1)">
+                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+            </g>
         </svg></button>
         <div class="separator"></div>
         <button class="icon" title="Undo (Ctrl+Z)" disabled id="button_undo" onclick="history_undo()"><svg 
@@ -160,7 +163,7 @@
         </svg></button>
     </div>
     <div class="right-side">
-        <button class="icon export-settings-toggle" title="Export settings" onclick="document.body.classList.toggle('show-export-settings')"><svg 
+        <button class="icon export-settings-toggle" title="Toggle export options" onclick="document.body.classList.toggle('show-export-settings')"><svg 
             xmlns="http://www.w3.org/2000/svg"
             width="24"
             height="24"
@@ -193,7 +196,6 @@
             <line x1="12" y1="2" x2="12" y2="15" />
         </svg></button>
     </div>
-      <!-- Icons from: https://www.svgrepo.com/collection/lucide-line-icons -->
 </div>
 <div class="extra-controls bg-image-controls">
     <button class="icon" title="Clear background" onclick="clearBackground()"><svg 
@@ -259,27 +261,67 @@
         <div class="input-wrapper" data-units="px"><input type="number" id="bg_offset_y" step="1" value="0" onchange="updateBackgroundImage()"></div>
     </div>
     <div class="separator"></div>
-    <button disabled class="icon" title="Auto fill" onclick="runAutoFill()"><svg 
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#000000"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M15 4V2" />
-        <path d="M15 16v-2" />
-        <path d="M8 9h2" />
-        <path d="M20 9h2" />
-        <path d="M17.8 11.8L19 13" />
-        <path d="M15 9h0" />
-        <path d="M17.8 6.2L19 5" />
-        <path d="M3 21l9-9" />
-        <path d="M12.2 6.2L11 5" />
-    </svg></button>
+    <div id="autofill_submenu" class="autofill-submenu" onmouseenter="this.classList.add('autofill-preview-active'); autoFill_showPreview()" onmouseleave="autoFill_hidePreview(); this.classList.remove('autofill-preview-active')" onfocusin="autoFill_showPreview()" onfocusout="if (!this.classList.contains('autofill-preview-active')) autoFill_hidePreview();">
+        <button class="icon icon-sun" title="Autofill mode: Light" onclick="document.body.classList.toggle('autofill-mode-light'); autoFill_showPreview()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" />
+            <path d="M12 20v2" />
+            <path d="M5 5l1.5 1.5" />
+            <path d="M17.5 17.5L19 19" />
+            <path d="M2 12h2" />
+            <path d="M20 12h2" />
+            <path d="M5 19l1.5-1.5" />
+            <path d="M17.5 6.5L19 5" />
+        </svg></button>
+        <button class="icon icon-moon" title="Autofill mode: Dark" onclick="document.body.classList.toggle('autofill-mode-light'); autoFill_showPreview()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+        </svg></button>
+        <div class="input-slider">
+            <label for="autofill_cutoff">CUTOFF</label>
+            <div class="input-wrapper" data-units="%" data-value="5" style="--data-value: 5;"><input type="range" id="autofill_cutoff" step="1" value="5" min="0" max="100" oninput="this.parentNode.dataset.value = this.value; this.parentNode.style.setProperty('--data-value', this.value); autoFill_showPreview()"></div>
+        </div>
+        <button class="icon" title="Auto fill" onclick="autoFill_apply()"><svg 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M15 4V2" />
+            <path d="M15 16v-2" />
+            <path d="M8 9h2" />
+            <path d="M20 9h2" />
+            <path d="M17.8 11.8L19 13" />
+            <path d="M15 9h0" />
+            <path d="M17.8 6.2L19 5" />
+            <path d="M3 21l9-9" />
+            <path d="M12.2 6.2L11 5" />
+        </svg></button>
+    </div>
 </div>
 <div class="extra-controls preview-settings">
     <div class="number-picker">
@@ -308,5 +350,6 @@
     <div id="status"></div>
 </div>
 <div class="drop-area" id="drop_area"></div>
+<!-- Icons from: https://www.svgrepo.com/collection/lucide-line-icons -->
 </body>
 </html>
