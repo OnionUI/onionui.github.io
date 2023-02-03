@@ -681,37 +681,52 @@ async function exportImage() {
 }
 
 
+let intervalId;
+
 function initNumberPickers() {
     const pickers = document.querySelectorAll("input[type=number]");
 
+    const parse_minmax_property = value => value != '' ? parseInt(value) : -1;
+
     for (let picker of pickers) {
         const wrapper = picker.parentElement;
+        const createButton = (content, value_add, can_add_to) => {
+            const btn = document.createElement("button");
+            const btn_click = () => {
+                const value = parseInt(picker.value);
+                if (!can_add_to(value))
+                    return;
+                picker.value = value + value_add;
+                picker.onchange();
+            }
 
-        const minus_btn = document.createElement("button");
-        minus_btn.innerHTML = "&minus;";
-        minus_btn.tabIndex = "-1";
-        minus_btn.addEventListener("click", () => {
-            const value = parseInt(picker.value);
-            const min_value = picker.min != '' ? parseInt(picker.min) : -1;
+            btn.innerHTML = content;
+            btn.tabIndex = "-1";
+            btn.addEventListener("click", btn_click);
+            btn.addEventListener("mousedown", () => {
+                intervalId = setTimeout(() => {
+                    intervalId = setInterval(btn_click, 100);
+                }, 300);
+            });
+            btn.addEventListener("mouseup", () => {
+                clearInterval(intervalId);
+            });
+            wrapper.appendChild(btn);
+        }
+
+        createButton("&minus;", -1, value => {
+            const min_value = parse_minmax_property(picker.min);
             if (min_value != -1 && value <= min_value)
-                return;
-            picker.value = value - 1;
-            picker.onchange();
+                return false;
+            return true;
         })
-        wrapper.appendChild(minus_btn);
 
-        const plus_btn = document.createElement("button");
-        plus_btn.innerHTML = "&plus;";
-        plus_btn.tabIndex = "-1";
-        plus_btn.addEventListener("click", () => {
-            const value = parseInt(picker.value);
-            const max_value = picker.max != '' ? parseInt(picker.max) : -1;
+        createButton("&plus;", 1, value => {
+            const max_value = parse_minmax_property(picker.max);
             if (max_value != -1 && value >= max_value)
-                return;
-            picker.value = value + 1;
-            picker.onchange();
+                return false;
+            return true;
         })
-        wrapper.appendChild(plus_btn);
     }
 }
 
