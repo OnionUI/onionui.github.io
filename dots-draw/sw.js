@@ -1,4 +1,4 @@
-const cache_name = "dots-draw-v1.4.2";
+const cache_name = "dots-draw-v1.4.3";
 const cache_content = [
     "/dots-draw/",
     "/dots-draw/index.html",

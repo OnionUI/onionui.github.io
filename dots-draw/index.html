@@ -215,9 +215,9 @@
         <path d="M22 5h-6" />
     </svg></button>
     <div class="separator"></div>
-    <div class="number-picker">
+    <div class="input-slider">
         <label for="bg_opacity">Opacity</label>
-        <div class="input-wrapper" data-units="%"><input type="number" id="bg_opacity" min="0" max="100" step="1" value="20" onchange="updateBackgroundImage()"></div>
+        <div class="input-wrapper" data-units="%" data-value="20" style="--data-value: 20;"><input type="range" id="bg_opacity" step="1" value="20" min="0" max="100" oninput="this.parentNode.dataset.value = this.value; this.parentNode.style.setProperty('--data-value', this.value); updateBackgroundImage()"></div>
     </div>
     <button class="icon icon-eye-off" title="Show background" onclick="document.body.classList.toggle('hide-bg-image')"><svg 
         xmlns="http://www.w3.org/2000/svg"
@@ -297,7 +297,7 @@
             <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
         </svg></button>
         <div class="input-slider">
-            <label for="autofill_cutoff">CUTOFF</label>
+            <label for="autofill_cutoff">Cutoff</label>
             <div class="input-wrapper" data-units="%" data-value="5" style="--data-value: 5;"><input type="range" id="autofill_cutoff" step="1" value="5" min="0" max="100" oninput="this.parentNode.dataset.value = this.value; this.parentNode.style.setProperty('--data-value', this.value); autoFill_showPreview()"></div>
         </div>
         <button class="icon" title="Auto fill" onclick="autoFill_apply()"><svg 
