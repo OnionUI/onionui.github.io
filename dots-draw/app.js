@@ -185,7 +185,7 @@ window.onload = () => {
 
 
 function isTextInput(target) {
-    return target.tagName == "INPUT";
+    return target.tagName == "INPUT" && (target.type == "text" || target.type == "");
 }
 
 
