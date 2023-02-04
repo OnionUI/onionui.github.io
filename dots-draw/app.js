@@ -58,19 +58,22 @@ window.onload = () => {
             event.preventDefault();
             exportImage();
         }
-        else if (event.ctrlKey && event.key == 'a') {
-            event.preventDefault();
-            switchTool(SELECT_TOOL);
-            draw_type = 0;
-            boxSelection(canvas.children[0], canvas.children[canvas.children.length - 1]);
-        }
-        else if (!isTextInput(event.target) && event.key == '1') {
-            event.preventDefault();
-            switchTool(PEN_TOOL);
-        }
-        else if (!isTextInput(event.target) && event.key == '2') {
-            event.preventDefault();
-            switchTool(SELECT_TOOL);
+        
+        if (!isTextInput(event.target)) {
+            if (event.ctrlKey && event.key == 'a') {
+                event.preventDefault();
+                switchTool(SELECT_TOOL);
+                draw_type = 0;
+                boxSelection(canvas.children[0], canvas.children[canvas.children.length - 1]);
+            }
+            else if (event.key == '1') {
+                event.preventDefault();
+                switchTool(PEN_TOOL);
+            }
+            else if (event.key == '2') {
+                event.preventDefault();
+                switchTool(SELECT_TOOL);
+            }
         }
 
         if (tool_active == SELECT_TOOL && hasSelection() && !isTextInput(event.target)) {
@@ -185,7 +188,7 @@ window.onload = () => {
 
 
 function isTextInput(target) {
-    return target.tagName == "INPUT" && (target.type == "text" || target.type == "");
+    return target.tagName == "INPUT" && (target.type == "text" || target.type == "number" || target.type == "");
 }
 
 
