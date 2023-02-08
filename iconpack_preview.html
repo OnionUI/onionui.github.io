@@ -15,6 +15,7 @@ body {
     font-family: sans-serif;
     color: rgba(var(--text-color-rgb), .75);
     margin: 16px;
+    transition: color .3s;
 }
 
 h2 {
@@ -35,6 +36,7 @@ h2 {
     border-radius: 8px;
     font-weight: bold;
     user-select: none;
+    transition: color .3s;
 }
 
 .input-color-label:hover, .input-color-label:focus-within {
@@ -213,8 +215,6 @@ function setBackgroundColor(color) {
     main_bg_color = color;
 
     document.body.style.setProperty('--text-color-rgb', brightness < 0.5 ? "255, 255, 255" : "0, 0, 0");
-
-    console.log({color, brightness});
 }
 
 function setAllSelected(enabled) {
