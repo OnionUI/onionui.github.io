@@ -162,11 +162,115 @@ input[type=checkbox] + label:hover, input[type=checkbox]:hover + label {
     justify-content: center;
     image-rendering: pixelated;
 }
+
+.app-icons .icon-preview-container {
+    width: 33%;
+    max-width: 640px;
+    height: 90px;
+    justify-content: left;
+}
+
+.app-icons .icon-preview-container::after {
+    left: 111px;
+    bottom: auto;
+}
+
+.app-icons .icon-preview {
+    position: relative;
+    width: 74px;
+    height: 74px;
+    margin-left: 20px;
+}
 </style>
 </head>
 <body>
 <script>
-const icons = ['32X', '5200', '7800', 'amiga', 'arcade', 'atari', 'atarist', 'c64', 'col', 'cpc', 'cps1', 'cps2', 'cps3', 'dos', 'fairchild', 'fc', 'fds', 'gb', 'gba', 'gbc', 'gg', 'gw', 'itv', 'lynx', 'md', 'megaduck', 'ms', 'msx', 'neocd', 'neogeo', 'ngp', 'ody', 'pce', 'pcecd', 'pico', 'poke', 'ports', 'ps', 'satella', 'scummvm', 'search', 'segacd', 'segasgone', 'sfc', 'sgb', 'sgfx', 'sufami', 'supervision', 'tic', 'vb', 'vdp', 'vectrex', 'ws', 'zxs'];
+const icons = [
+    '32X',
+    '5200',
+    '7800',
+    'amiga',
+    'arcade',
+    'atari',
+    'atarist',
+    'c64',
+    'col',
+    'cpc',
+    'cps1',
+    'cps2',
+    'cps3',
+    'dos',
+    'fairchild',
+    'fc',
+    'fds',
+    'gb',
+    'gba',
+    'gbc',
+    'gg',
+    'gw',
+    'itv',
+    'lynx',
+    'md',
+    'megaduck',
+    'ms',
+    'msx',
+    'neocd',
+    'neogeo',
+    'ngp',
+    'ody',
+    'pce',
+    'pcecd',
+    'pico',
+    'poke',
+    'ports',
+    'ps',
+    'satella',
+    'scummvm',
+    'search',
+    'segacd',
+    'segasgone',
+    'sfc',
+    'sgb',
+    'sgfx',
+    'sufami',
+    'supervision',
+    'tic',
+    'vb',
+    'vdp',
+    'vectrex',
+    'ws',
+    'zxs'
+];
+
+const app_icons = [
+    'activity',
+    'clock',
+    'commander',
+    'dice',
+    'display',
+    'ereader',
+    'expert',
+    'ffplay',
+    'gallery',
+    'gameswitcher',
+    'guest_off',
+    'guest_on',
+    'manual',
+    'music',
+    'pacman',
+    'pdf',
+    'retroarch',
+    'search',
+    'terminal',
+    'themes',
+    'tweaks',
+    'tweaks_advanced',
+    'tweaks_icons',
+    'tweaks_menu_button',
+    'tweaks_system',
+    'tweaks_tools',
+    'tweaks_user_interface'
+];
 
 const dirname = path => path.substring(0, path.lastIndexOf('/'));
 const basename = path => path.substring(path.lastIndexOf('/') + 1);
@@ -307,11 +411,21 @@ function main() {
         html += `<div class="icons-container" id="${icon_pack_id}">`;
 
         for (icon of icons) {
-            html += 
-                `<div class="icon-preview-container" data-icon="${icon}">
-                    <div class="icon-preview"><img src="${icon_pack.path}${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon');incrementIconCount('${icon_pack_id}', ${index})"></div>
-                    <div class="icon-preview selected"><img src="${icon_pack.path}sel/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
-                </div>`;
+            html += `<div class="icon-preview-container" data-icon="${icon}">
+                <div class="icon-preview"><img src="${icon_pack.path}${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon');incrementIconCount('${icon_pack_id}', ${index})"></div>
+                <div class="icon-preview selected"><img src="${icon_pack.path}sel/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
+            </div>`;
+        }
+
+        html += '</div>';
+
+        html += `<div class="icons-container app-icons" id="${icon_pack_id}_apps">`;
+
+        for (icon of app_icons) {
+            html += `<div class="icon-preview-container" data-icon="${icon}">
+                <div class="icon-preview"><img src="${icon_pack.path}app/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
+                <div class="icon-preview selected"><img src="${icon_pack.path}app/sel/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
+            </div>`;
         }
 
         html += '</div>';
