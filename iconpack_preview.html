@@ -164,22 +164,18 @@ input[type=checkbox] + label:hover, input[type=checkbox]:hover + label {
 }
 
 .app-icons .icon-preview-container {
-    width: 33%;
-    max-width: 640px;
+    width: 90px;
     height: 90px;
-    justify-content: left;
 }
 
 .app-icons .icon-preview-container::after {
-    left: 111px;
-    bottom: auto;
+    display: none;
 }
 
 .app-icons .icon-preview {
     position: relative;
     width: 74px;
     height: 74px;
-    margin-left: 20px;
 }
 </style>
 </head>
@@ -394,12 +390,13 @@ function main() {
     html += `<input type="checkbox"${is_all_selected ? " checked" : ""} id="all_selected_checkbox" onclick="setAllSelected(this.checked)"><label for="all_selected_checkbox"> Show only selected state</label>`;
     html += "&nbsp;&nbsp;";
     html += `<input type="checkbox"${show_only_existing ? " checked" : ""} id="show_only_existing_checkbox" onclick="setShowOnlyExisting(this.checked)"><label for="show_only_existing_checkbox"> Hide missing icons</label>`;
-    html += "</div>"
 
     if (location.protocol == "file:") {
         html += "&nbsp;&nbsp;";
         html += `<input type="checkbox"${auto_refresh ? " checked" : ""} id="auto_refresh_checkbox" onclick="setAutoRefresh(this.checked)"><label for="auto_refresh_checkbox"> Auto refresh (10s)</label>`;
     }
+
+    html += "</div>";
 
     icon_counts = new Array(icon_packs.length).fill(0);
 
@@ -411,7 +408,7 @@ function main() {
         html += `<div class="icons-container" id="${icon_pack_id}">`;
 
         for (icon of icons) {
-            html += `<div class="icon-preview-container" data-icon="${icon}">
+            html += `<div class="icon-preview-container" data-icon="${icon}" title="${icon}">
                 <div class="icon-preview"><img src="${icon_pack.path}${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon');incrementIconCount('${icon_pack_id}', ${index})"></div>
                 <div class="icon-preview selected"><img src="${icon_pack.path}sel/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
             </div>`;
@@ -422,7 +419,7 @@ function main() {
         html += `<div class="icons-container app-icons" id="${icon_pack_id}_apps">`;
 
         for (icon of app_icons) {
-            html += `<div class="icon-preview-container" data-icon="${icon}">
+            html += `<div class="icon-preview-container" data-icon="${icon}" title="${icon}">
                 <div class="icon-preview"><img src="${icon_pack.path}app/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
                 <div class="icon-preview selected"><img src="${icon_pack.path}app/sel/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
             </div>`;
