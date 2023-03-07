@@ -37,7 +37,7 @@ main {
 }
 
 .app-icons.has-icons::before {
-    content: "Apps";
+    content: attr(data-name);
     display: block;
     width: 100%;
     font-size: large;
@@ -445,7 +445,7 @@ function main() {
 
         html += '</div>';
 
-        html += `<div class="icons-container app-icons" id="${icon_pack_id}_apps">`;
+        html += `<div class="icons-container app-icons" data-name="${decodeURI(icon_pack.title)} - App icons" id="${icon_pack_id}_apps">`;
 
         for (icon of app_icons) {
             html += `<div class="icon-preview-container" data-icon="${icon}" title="${icon}">
