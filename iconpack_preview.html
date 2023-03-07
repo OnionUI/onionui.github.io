@@ -6,6 +6,11 @@
 :root {
     --main-bg-color: #333333;
     --text-color-rgb: 255, 255, 255;
+    --icon-max-width: 150px;
+    --icon-max-height: 150px;
+}
+
+body.has-theme {
     --icon-max-width: 155px;
     --icon-max-height: 170px;
 }
@@ -33,7 +38,7 @@ main {
 
 .app-icons {
     margin: 0 auto;
-    max-width: 672px;
+    max-width: 777px;
 }
 
 .app-icons.has-icons::before {
@@ -42,7 +47,7 @@ main {
     width: 100%;
     font-size: large;
     font-weight: bold;
-    margin: .5em 0;
+    margin: 1.5em 0;
 }
 
 h2 {
@@ -152,10 +157,12 @@ input[type=checkbox] + label:hover, input[type=checkbox]:hover + label {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 2px;
 }
 
 .has-theme .icon-preview-container {
     border: none;
+    margin: 0;
 }
 
 .show-only-existing .icon-preview-container {
@@ -175,10 +182,14 @@ input[type=checkbox] + label:hover, input[type=checkbox]:hover + label {
     display: block;
     position: absolute;
     content: attr(data-icon);
-    bottom: 30px;
+    bottom: 10px;
     opacity: 0.5;
     font-family: monospace;
     font-size: 16px;
+}
+
+.has-theme .icon-preview-container::after {
+    bottom: 30px;
     margin-right: 5px;
 }
 
@@ -192,19 +203,19 @@ input[type=checkbox] + label:hover, input[type=checkbox]:hover + label {
     justify-content: center;
     image-rendering: pixelated;
     box-sizing: border-box;
-    padding-bottom: 24px;
-    padding-right: 5px;
 }
 
 .has-theme .icon-preview {
     background-image: var(--path-bg-game-item-n), var(--path-background);
     background-repeat: no-repeat, no-repeat;
     background-position: 0px 0px, center;
+    padding-bottom: 24px;
+    padding-right: 5px;
 }
 
 .has-theme .app-icons .icon-preview {
     background-image: var(--path-background);
-    background-position: -12px -60px;
+    background-position: 0px -60px;
 }
 
 .has-theme .icon-preview-container:hover .icon-preview,
@@ -215,11 +226,11 @@ input[type=checkbox] + label:hover, input[type=checkbox]:hover + label {
 .has-theme .app-icons .icon-preview-container:hover .icon-preview,
 .has-theme.all-selected .app-icons .icon-preview-container .icon-preview {
     background-image: var(--path-bg-list-l), var(--path-background);
-    background-position: -12px 0px, -12px -60px;
+    background-position: 0px 0px, 0px -60px;
 }
 
 .app-icons .icon-preview-container {
-    width: 90px;
+    width: 111px;
     height: 90px;
 }
 
@@ -229,9 +240,9 @@ input[type=checkbox] + label:hover, input[type=checkbox]:hover + label {
 
 .app-icons .icon-preview {
     position: relative;
-    width: 90px;
+    width: 111px;
     height: 90px;
-    background-position: -20px, 0;
+    background-position: 0px, 0;
     padding-right: 0;
     padding-bottom: 0;
 }
@@ -414,10 +425,19 @@ function setAutoRefresh(enabled) {
 function loadImage(url) {
     return new Promise((resolve, reject) => {
         const img = new Image();
+        let timer;
+
         img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.crossOrigin = 'anonymous'
+        img.onerror = () => {
+            clearTimeout(timer);
+            reject();
+        }
+
+        if (location.protocol != "file:")
+            img.crossOrigin = 'anonymous';
+        
         img.src = url;
+        timer = setTimeout(reject, 5000);
     });
 }
 
@@ -456,8 +476,9 @@ async function applyMostUsedColor(image_url) {
     setBackgroundColor(color, true);
 }
 
-function main() {
+async function main() {
     let doc_title = basename(dirname(decodeURI(location.href)));
+    let is_theme = false;
 
     if (doc_title == "icons")
         doc_title = basename(dirname(dirname(decodeURI(location.href))));
@@ -488,7 +509,14 @@ function main() {
         }
     }
     else {
-        icon_packs.push({ title: doc_title, path: "./" });
+        try {
+            let test_theme = await loadImage("./skin/background.png");
+            is_theme = true;
+            icon_packs.push({ title: doc_title, path: "./icons/" });
+        }
+        catch (e) {
+            icon_packs.push({ title: doc_title, path: "./" });
+        }
     }
 
     setBackgroundColor(main_bg_color);
@@ -523,7 +551,10 @@ function main() {
         let theme_path = "";
         let get_theme_img = name => theme_path ? theme_path + `/skin/${name}.png` : "";
 
-        if (basename(dirname(icon_pack.path)) == "icons") {
+        if (!is_theme)
+            is_theme = basename(dirname(icon_pack.path)) == "icons";
+
+        if (is_theme) {
             theme_path = dirname(dirname(icon_pack.path));
             document.body.classList.add("has-theme");
         }
