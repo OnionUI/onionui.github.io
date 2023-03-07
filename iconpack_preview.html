@@ -36,6 +36,15 @@ main {
     max-width: 672px;
 }
 
+.app-icons.has-icons::before {
+    content: "Apps";
+    display: block;
+    width: 100%;
+    font-size: large;
+    font-weight: bold;
+    margin: .5em 0;
+}
+
 h2 {
     margin-top: 2em;
 }
@@ -440,8 +449,7 @@ function main() {
 
         for (icon of app_icons) {
             html += `<div class="icon-preview-container" data-icon="${icon}" title="${icon}">
-                <div class="icon-preview"><img src="${icon_pack.path}app/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
-                <div class="icon-preview selected"><img src="${icon_pack.path}app/sel/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon')"></div>
+                <div class="icon-preview"><img src="${icon_pack.path}app/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon');this.parentNode.parentNode.parentNode.classList.add('has-icons')"></div>
             </div>`;
         }
 
