@@ -15,7 +15,25 @@ body {
     font-family: sans-serif;
     color: rgba(var(--text-color-rgb), .75);
     margin: 16px;
+    margin-top: 10vh;
+    margin-bottom: 50vh;
     transition: color .3s;
+}
+
+main {
+    margin: 0 auto;
+    max-width: 1404px;
+}
+
+@media only screen and (max-width: 1450px) {
+    main {
+        max-width: 936px;
+    }
+}
+
+.app-icons {
+    margin: 0 auto;
+    max-width: 672px;
 }
 
 h2 {
@@ -100,6 +118,7 @@ input[type=checkbox] + label:hover, input[type=checkbox]:hover + label {
     position: relative;
     width: var(--icon-max-width);
     height: var(--icon-max-height);
+    margin: 6px;
 }
 
 .icon-preview-container .icon-preview.selected {
@@ -382,7 +401,7 @@ function main() {
 
     document.title = "Icon Pack: " + doc_title;
 
-    let html = "";
+    let html = "<main>";
 
     html += `<h1>Icon Pack: ${doc_title}</h1>`;
 
@@ -428,6 +447,8 @@ function main() {
 
         html += '</div>';
     }
+
+    html += "</main>";
 
     document.body.innerHTML = html;
 
