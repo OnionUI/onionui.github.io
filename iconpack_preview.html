@@ -38,7 +38,7 @@ main {
 
 .app-icons {
     margin: 0 auto;
-    max-width: 777px;
+    max-width: 833px;
 }
 
 .app-icons.has-icons::before {
@@ -214,8 +214,20 @@ input[type=checkbox] + label:hover, input[type=checkbox]:hover + label {
 }
 
 .has-theme .app-icons .icon-preview {
+    background: none;
+    overflow: hidden;
+}
+
+.has-theme .app-icons .icon-preview::before {
+    content: "";
+    position: absolute;
+    width: 640px;
+    height: 480px;
     background-image: var(--path-background);
-    background-position: 0px -60px;
+    left: 0;
+    top: calc(-60px - var(--line-no) * 90px);
+    z-index: -1;
+    transform: rotate(-180deg);
 }
 
 .has-theme .icon-preview-container:hover .icon-preview,
@@ -226,12 +238,13 @@ input[type=checkbox] + label:hover, input[type=checkbox]:hover + label {
 .has-theme .app-icons .icon-preview-container:hover .icon-preview,
 .has-theme.all-selected .app-icons .icon-preview-container .icon-preview {
     background-image: var(--path-bg-list-l), var(--path-background);
-    background-position: 0px 0px, 0px -60px;
+    background-position: 0px 0px, 0px calc(-60px - var(--line-no) * 90px);
 }
 
 .app-icons .icon-preview-container {
     width: 111px;
     height: 90px;
+    margin: 0 4px;
 }
 
 .app-icons .icon-preview-container::after {
@@ -581,9 +594,10 @@ async function main() {
 
         html += `<div class="icons-container app-icons" data-name="${decodeURI(icon_pack.title)} - App icons" id="${icon_pack_id}_apps">`;
 
-        for (icon of app_icons) {
+        for (const [i, icon] of app_icons.entries()) {
+            let line = Math.floor(i / 7);
             html += `<div class="icon-preview-container" data-icon="${icon}" title="${icon}">
-                <div class="icon-preview"><img src="${icon_pack.path}app/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon');this.parentNode.parentNode.parentNode.classList.add('has-icons')"></div>
+                <div class="icon-preview" style="--line-no: ${line};"><img src="${icon_pack.path}app/${icon}.png" style="display:none;" onerror="this.parentNode.style.display='none'" onload="this.style.display='';this.parentNode.parentNode.classList.add('has-icon');this.parentNode.parentNode.parentNode.classList.add('has-icons')"></div>
             </div>`;
         }
 
