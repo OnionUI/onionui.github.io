@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[5836],{9284:e=>{e.exports=JSON.parse('{"title":"For developers","slug":"/category/for-developers","permalink":"/docs/category/for-developers","navigation":{"previous":{"title":"CHDMAN","permalink":"/docs/advanced/chdman"},"next":{"title":"Setup","permalink":"/docs/dev/setup"}}}')}}]);
