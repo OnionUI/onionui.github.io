@@ -2,11 +2,25 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://onionui.github.io/blog</id>
     <title>Onion Blog</title>
-    <updated>2023-03-21T00:00:00.000Z</updated>
+    <updated>2023-09-16T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://onionui.github.io/blog"/>
     <subtitle>Onion Blog</subtitle>
     <icon>https://onionui.github.io/img/favicon.png</icon>
+    <entry>
+        <title type="html"><![CDATA[Introducing the new Onion website!]]></title>
+        <id>https://onionui.github.io/blog/welcome</id>
+        <link href="https://onionui.github.io/blog/welcome"/>
+        <updated>2023-09-16T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[We've finally moved away from using GitHub Wikis, and we're happy to introduce our shiny new website!]]></summary>
+        <content type="html"><![CDATA[<p>We've finally moved away from using GitHub Wikis, and we're happy to introduce our shiny new website!</p><p>The new website introduces:</p><ol><li><strong>Instant search</strong> (press <kbd>Ctrl</kbd>+<kbd>K</kbd> for quick access)</li><li><strong>A souped up wiki</strong> with bunch of awesome styles and functionalities<ul><li><strong>Info boxes:</strong> notes, tips, warnings, and info</li><li><strong>Tabs:</strong> the installation guide now includes tabs for device model and OS type</li><li><strong>Embeds:</strong> YouTube videos are now directly embedded on the page</li><li><strong>Better organization:</strong> since we now have search, we can split stuff into multiple pages (like the <a href="/docs/emulators"><em>Emulators</em></a> page)</li></ul></li><li><strong>A blog</strong> for all our creative release notes, and soon even more interesting stuff<ul><li>including a <strong>comment section</strong> on each post (powered by GitHub Discussions)</li></ul></li><li><strong>Versioned documentation</strong> - <em>Using an older version of Onion?</em> Go back in time and browse an older version of the Onion wiki!</li><li><strong>SEO</strong> - this wiki should get picked up by Google (finally)! 😅</li></ol><p>We hope you'll find this new site a joy to use, and maybe even more impressive than our old wiki.</p>]]></content>
+        <author>
+            <name>Aemiii91</name>
+            <uri>https://github.com/Aemiii91</uri>
+        </author>
+        <category label="misc" term="misc"/>
+        <category label="announcements" term="announcements"/>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Release notes: Onion V4.1]]></title>
         <id>https://onionui.github.io/blog/release-notes/4.1.0</id>

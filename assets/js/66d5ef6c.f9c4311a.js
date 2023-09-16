@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[9228],{4087:e=>{e.exports=JSON.parse('[{"label":"release-notes","permalink":"/blog/tags/release-notes","count":3},{"label":"stable","permalink":"/blog/tags/stable","count":3}]')}}]);

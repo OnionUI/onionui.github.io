@@ -4,10 +4,20 @@
         <title>Onion Blog</title>
         <link>https://onionui.github.io/blog</link>
         <description>Onion Blog</description>
-        <lastBuildDate>Tue, 21 Mar 2023 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Sat, 16 Sep 2023 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[Introducing the new Onion website!]]></title>
+            <link>https://onionui.github.io/blog/welcome</link>
+            <guid>https://onionui.github.io/blog/welcome</guid>
+            <pubDate>Sat, 16 Sep 2023 00:00:00 GMT</pubDate>
+            <description><![CDATA[We've finally moved away from using GitHub Wikis, and we're happy to introduce our shiny new website!]]></description>
+            <content:encoded><![CDATA[<p>We've finally moved away from using GitHub Wikis, and we're happy to introduce our shiny new website!</p><p>The new website introduces:</p><ol><li><strong>Instant search</strong> (press <kbd>Ctrl</kbd>+<kbd>K</kbd> for quick access)</li><li><strong>A souped up wiki</strong> with bunch of awesome styles and functionalities<ul><li><strong>Info boxes:</strong> notes, tips, warnings, and info</li><li><strong>Tabs:</strong> the installation guide now includes tabs for device model and OS type</li><li><strong>Embeds:</strong> YouTube videos are now directly embedded on the page</li><li><strong>Better organization:</strong> since we now have search, we can split stuff into multiple pages (like the <a href="/docs/emulators"><em>Emulators</em></a> page)</li></ul></li><li><strong>A blog</strong> for all our creative release notes, and soon even more interesting stuff<ul><li>including a <strong>comment section</strong> on each post (powered by GitHub Discussions)</li></ul></li><li><strong>Versioned documentation</strong> - <em>Using an older version of Onion?</em> Go back in time and browse an older version of the Onion wiki!</li><li><strong>SEO</strong> - this wiki should get picked up by Google (finally)! 😅</li></ol><p>We hope you'll find this new site a joy to use, and maybe even more impressive than our old wiki.</p>]]></content:encoded>
+            <category>misc</category>
+            <category>announcements</category>
+        </item>
         <item>
             <title><![CDATA[Release notes: Onion V4.1]]></title>
             <link>https://onionui.github.io/blog/release-notes/4.1.0</link>
