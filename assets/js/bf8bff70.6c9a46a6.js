@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[529],{9836:e=>{e.exports=JSON.parse('{"title":"Resources","slug":"/category/resources","permalink":"/docs/category/resources","navigation":{"previous":{"title":"Rom folders - Quick reference","permalink":"/docs/emulators/folders"},"next":{"title":"Ports collection","permalink":"/docs/ports"}}}')}}]);
