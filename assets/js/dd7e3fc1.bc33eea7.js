@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[4914],{1138:e=>{e.exports=JSON.parse('{"title":"Resources","slug":"/category/resources","permalink":"/docs/4.1/category/resources","navigation":{"previous":{"title":"Frequently Asked Questions (FAQ)","permalink":"/docs/4.1/faq"},"next":{"title":"Emulators","permalink":"/docs/4.1/emulators"}}}')}}]);
