@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[9212],{78429:e=>{e.exports=JSON.parse('{"title":"Guides","slug":"/category/guides","permalink":"/docs/category/guides","navigation":{"previous":{"title":"VNC Server","permalink":"/docs/network/vnc"},"next":{"title":"Advanced guides","permalink":"/docs/advanced"}}}')}}]);
